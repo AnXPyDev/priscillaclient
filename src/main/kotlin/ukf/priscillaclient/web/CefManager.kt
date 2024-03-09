@@ -1,9 +1,8 @@
-package ukf.priscillaclient
+package ukf.priscillaclient.web
 
 
 import me.friwi.jcefmaven.*;
 import org.cef.*;
-import org.cef.CefSettings.ColorType
 
 class CefManager {
     val builder: CefAppBuilder

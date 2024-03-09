@@ -1,6 +1,7 @@
-package ukf.priscillaclient
+package ukf.priscillaclient.web
 
 import org.cef.CefClient
+import ukf.priscillaclient.components.WebView
 
 class ProtectedWebClient(val client: CefClient, val filter: WebFilter?) {
     init {

@@ -1,6 +1,6 @@
-package ukf.priscillaclient.filters
+package ukf.priscillaclient.web.filters
 
-import ukf.priscillaclient.WebFilter
+import ukf.priscillaclient.web.WebFilter
 
 open class StandardWebFilter : WebFilter {
     val httpsPrefix = "https://"

@@ -1,4 +1,4 @@
-package ukf.priscillaclient
+package ukf.priscillaclient.components
 
 import org.cef.browser.CefBrowser
 import java.awt.BorderLayout

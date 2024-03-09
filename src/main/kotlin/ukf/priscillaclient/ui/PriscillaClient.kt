@@ -1,8 +1,12 @@
-package ukf.priscillaclient
+package ukf.priscillaclient.ui
 
 import com.formdev.flatlaf.FlatDarkLaf
 import com.formdev.flatlaf.FlatLightLaf
-import ukf.priscillaclient.filters.DomainWebFilter
+import com.formdev.flatlaf.themes.FlatMacDarkLaf
+import ukf.priscillaclient.web.CefManager
+import ukf.priscillaclient.web.ProtectedWebClient
+import ukf.priscillaclient.components.WebView
+import ukf.priscillaclient.web.filters.DomainWebFilter
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.*
@@ -30,6 +34,9 @@ class PriscillaClient : JFrame() {
         }
 
     init {
+
+        theme = FlatDarkLaf()
+
         priscillaClient = cefManager.client(DomainWebFilter.PriscillaWebFilter())
         translatorClient = cefManager.client(null)
 
@@ -57,7 +64,7 @@ class PriscillaClient : JFrame() {
     fun setupUi() {
         contentPane.layout = BorderLayout()
         contentPane.add(mainWebView, BorderLayout.CENTER)
-        contentPane.add(toolBar, BorderLayout.SOUTH)
+        contentPane.add(toolBar, BorderLayout.WEST)
         pack()
     }
 }

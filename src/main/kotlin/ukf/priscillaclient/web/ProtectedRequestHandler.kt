@@ -1,4 +1,4 @@
-package ukf.priscillaclient
+package ukf.priscillaclient.web
 
 import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
@@ -6,12 +6,12 @@ import org.cef.callback.CefAuthCallback
 import org.cef.callback.CefCallback
 import org.cef.handler.*
 import org.cef.misc.BoolRef
-import org.cef.misc.IntRef
 import org.cef.misc.StringRef
 import org.cef.network.CefCookie
 import org.cef.network.CefRequest
 import org.cef.network.CefResponse
 import org.cef.network.CefURLRequest
+import ukf.priscillaclient.web.WebFilter
 
 class ProtectedRequestHandler(val filter: WebFilter) : CefRequestHandler {
     inner class CookieAccessFilter : CefCookieAccessFilter {

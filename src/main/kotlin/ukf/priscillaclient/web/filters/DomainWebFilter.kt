@@ -1,4 +1,4 @@
-package ukf.priscillaclient.filters
+package ukf.priscillaclient.web.filters
 
 open class DomainWebFilter(val whitelist: Array<Regex>) : StandardWebFilter() {
     override fun isDomainAllowed(domain: String): Boolean {
@@ -17,5 +17,8 @@ open class DomainWebFilter(val whitelist: Array<Regex>) : StandardWebFilter() {
 
     class PriscillaWebFilter : DomainWebFilter(arrayOf(
         Regex(".*\\.fitped\\.eu"),
+        Regex("translate\\.google\\..*"),
+        Regex("consent\\.google\\..*"),
+        Regex(".*\\.gstatic\\..*")
     )) {}
 }

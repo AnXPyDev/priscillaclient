@@ -1,5 +1,6 @@
 module priscillaclient {
     requires kotlin.stdlib;
+    requires kotlinx.serialization.json;
 
     requires jcef;
     requires jcefmaven;
