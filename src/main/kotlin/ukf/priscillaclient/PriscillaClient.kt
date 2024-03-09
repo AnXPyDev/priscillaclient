@@ -2,6 +2,7 @@ package ukf.priscillaclient
 
 import com.formdev.flatlaf.FlatDarkLaf
 import com.formdev.flatlaf.FlatLightLaf
+import ukf.priscillaclient.filters.DomainWebFilter
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.*
@@ -14,6 +15,10 @@ class PriscillaClient : JFrame() {
     val cefManager: CefManager = CefManager()
     val toolBar: ToolBar
 
+
+    val priscillaClient: ProtectedWebClient
+    val translatorClient: ProtectedWebClient
+
     val mainWebView: WebView
 
     var theme: LookAndFeel? = null
@@ -25,7 +30,11 @@ class PriscillaClient : JFrame() {
         }
 
     init {
-        mainWebView = cefManager.webView(url_priscilla)
+        priscillaClient = cefManager.client(DomainWebFilter.PriscillaWebFilter())
+        translatorClient = cefManager.client(null)
+
+        mainWebView = priscillaClient.webView(url_priscilla)
+
         toolBar = ToolBar()
 
         title = "Priscilla Client"
