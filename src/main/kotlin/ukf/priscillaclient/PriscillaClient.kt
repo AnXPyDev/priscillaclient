@@ -1,27 +1,54 @@
 package ukf.priscillaclient
 
+import com.formdev.flatlaf.FlatDarkLaf
+import com.formdev.flatlaf.FlatLightLaf
+import java.awt.BorderLayout
 import java.awt.Dimension
-import javax.swing.JFrame
+import javax.swing.*
 
 class PriscillaClient : JFrame() {
 
-    val cefManager: CefManager
+    val url_priscilla = "https://priscilla.fitped.eu"
+    val url_translator = "https://translate.google.com"
+
+    val cefManager: CefManager = CefManager()
+    val toolBar: ToolBar
+
     val mainWebView: WebView
 
+    var theme: LookAndFeel? = null
+        set(value: LookAndFeel?) {
+            value ?: return
+            println(value)
+            UIManager.setLookAndFeel(value)
+            SwingUtilities.updateComponentTreeUI(this)
+        }
 
     init {
-        cefManager = CefManager()
-        mainWebView = cefManager.webView("https://priscilla.fitped.eu")
+        mainWebView = cefManager.webView(url_priscilla)
+        toolBar = ToolBar()
 
         title = "Priscilla Client"
-        size = Dimension(1280, 720)
 
         setupUi()
+        setupHooks()
+
+        size = Dimension(1280, 720)
 
         isVisible = true
     }
 
+    fun setupHooks() {
+        toolBar.priscillaButtonCallback = { mainWebView.browser.loadURL(url_priscilla) }
+        toolBar.translatorButtonCallback = { mainWebView.browser.loadURL(url_translator) }
+        toolBar.lightThemeCallback = { theme = FlatLightLaf() }
+        toolBar.darkThemeCallback = { theme = FlatDarkLaf() }
+    }
+
     fun setupUi() {
-        add(mainWebView)
+        contentPane.layout = BorderLayout()
+        contentPane.add(mainWebView, BorderLayout.CENTER)
+        contentPane.add(toolBar, BorderLayout.SOUTH)
+        pack()
     }
 }
