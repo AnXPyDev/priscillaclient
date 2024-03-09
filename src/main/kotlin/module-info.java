@@ -5,5 +5,7 @@ module priscillaclient {
     requires jcefmaven;
     requires java.desktop;
 
+    requires com.formdev.flatlaf;
+
     exports ukf.priscillaclient;
 }
