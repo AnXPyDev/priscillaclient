@@ -8,7 +8,7 @@ import BrowserView from '@/components/BrowserView.vue';
 <template>
     <div class="MainView">
         <ToolBar class="ToolBar"></ToolBar>        
-        <BrowserView class="BrowserView"></BrowserView>
+        <BrowserView id="priscilla" profile="priscilla" class="BrowserView"></BrowserView>
     </div>
 </template>
 

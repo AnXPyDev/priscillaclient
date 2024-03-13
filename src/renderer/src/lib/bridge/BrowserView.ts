@@ -17,6 +17,10 @@ export default class BrowserView {
         this.observer.observe(this.element);
     }
 
+    create(profile: string) {
+        return this.bridge.send('BrowserView-create', this.id, profile);
+    }
+
     attach() {
         return this.bridge.send('BrowserView-attach', this.id);
     }

@@ -4,11 +4,16 @@ import BrowserView from '@/lib/bridge/BrowserView';
 import Bridge from '@/lib/Bridge';
 import { ref, onMounted } from 'vue';
 
+const props = defineProps<{
+    id: string
+    profile: string
+}>();
+
 const region = ref<HTMLElement | null>(null) as any;
-const id = ref("testid");
 
 onMounted(() => {
-    const view = new BrowserView(new Bridge(true), id.value, region.value);
+    const view = new BrowserView(new Bridge(true), props.id, region.value);
+    view.create(props.profile);
     view.attach();
 });
 
@@ -16,7 +21,7 @@ onMounted(() => {
 
 <template>
     <div class="BrowserView" ref="region">
-        <h1>[Browser View]</h1>
+        <h1>Browser View [{{ props.id }}]</h1>
     </div>
 </template>
 
