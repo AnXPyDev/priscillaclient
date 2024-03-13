@@ -8,11 +8,19 @@ export default class Bridge {
         const response = window.electron.ipcRenderer.sendSync(signal, ...args);
         if (this.log) {
             console.log(`Bridge RND: ${signal} -> ${response}`);
+            console.log(response);
         }
         return response;
     }
 
-    async send(signal: string, ...args): Promise<any> {  
+
+    sendOneWay(signal: string, ...args): void {
+       window.electron.ipcRenderer.send(signal, ...args);
+    }
+
+    async send(signal: string, ...args): Promise<any> {
         return this.sendSync(signal, ...args);
     }
 }
+
+export const bridge = new Bridge(true);

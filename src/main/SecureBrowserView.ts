@@ -21,6 +21,10 @@ export default class SecureBrowserView {
             }
         });
 
+        this.view.webContents.on('login', (event) => {
+            console.log(`login: ${this.view.webContents.getURL()}`);
+        });
+
         this.view.webContents.loadURL(this.profile.homepage);
     }
 
@@ -34,5 +38,21 @@ export default class SecureBrowserView {
 
     resize(bounds) {
         this.view.setBounds(bounds);
+    }
+
+    back() {
+        this.view.webContents.goBack();
+    }
+    
+    forward() {
+        this.view.webContents.goForward();
+    }
+
+    home() {
+        this.view.webContents.loadURL(this.profile.homepage);
+    }
+
+    onFocus(handler) {
+        this.view.webContents.on('focus', handler);
     }
 }

@@ -14,6 +14,8 @@ export default class Application {
     // @ts-ignore
     window: BrowserWindow;
 
+    isKiosk = false;
+
     constructor() {
         app.whenReady().then(() => this.init());
 
@@ -57,7 +59,7 @@ export default class Application {
             preload: join(__dirname, '../preload/index.js'),
             sandbox: false
             }
-        })
+        });
 
         this.window.on('ready-to-show', () => {
             this.window.show()
@@ -73,6 +75,21 @@ export default class Application {
         } else {
             this.window.loadFile(join(__dirname, '../renderer/index.html'))
         }
+    }
+
+    kiosk() {
+        if (this.isKiosk) {
+            this.isKiosk = false;
+        } else {
+            this.isKiosk = true;
+        }
+
+        this.window.setKiosk(this.isKiosk);
+        this.window.setAlwaysOnTop(this.isKiosk, "screen-saver");
+        this.window.setFullScreen(this.isKiosk);
+        this.window.setFullScreenable(!this.isKiosk);
+        this.window.setMinimizable(!this.isKiosk);
+        this.window.setClosable(!this.isKiosk);
     }
 
     quit() {

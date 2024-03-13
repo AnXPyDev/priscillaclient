@@ -10,11 +10,22 @@ export default class Bridge {
         this.app = app;
     }
 
+    on(signal: string, handler: (...args: any[]) => any) {
+        ipcMain.on(signal, (event, ...args) => {
+            event.returnValue = handler(...args) ?? 0;
+        });
+    }
+
     init() {
-        ipcMain.on('BrowserView-create', (event, id: string, profile: string) => { event.returnValue = this.app.viewManager.create(id, profile); });
-        ipcMain.on('BrowserView-attach', (event, id: string) => { event.returnValue = this.app.viewManager.attach(id); });
-        ipcMain.on('BrowserView-detach', (event, id: string) => { event.returnValue = this.app.viewManager.detach(id); });
-        ipcMain.on('BrowserView-resize', (event, id: string, rect: Rect) => { event.returnValue = this.app.viewManager.resize(id, rect); });
+        this.on('BrowserView-create', (id: string, profile: string) => this.app.viewManager.create(id, profile));
+        this.on('BrowserView-attach', (id: string) => this.app.viewManager.attach(id));
+        this.on('BrowserView-detach', (id: string) => this.app.viewManager.detach(id));
+        this.on('BrowserView-resize', (id: string, rect: Rect) => this.app.viewManager.resize(id, rect));
+        this.on('Browser-home', () => this.app.viewManager.home());
+        this.on('Browser-back', () => this.app.viewManager.back());
+        this.on('Browser-forward', () => this.app.viewManager.forward());
+        this.on('Application-kiosk', () => this.app.kiosk());
+        this.on('Application-quit', () => this.app.quit());
     }
 
 }

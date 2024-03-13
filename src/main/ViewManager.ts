@@ -10,6 +10,8 @@ export default class ViewManager {
         attached: boolean
     }>();
 
+    focused?: SecureBrowserView;
+
     constructor(app: Application) {
         this.app = app;
     }
@@ -23,6 +25,10 @@ export default class ViewManager {
             view: new SecureBrowserView(this.app.webProfileManager.get(profile)),
             attached: false
         };
+
+        v.view.onFocus(() => {
+            this.focused = v.view;
+        })
 
         this.views.set(id, v);
         return 0;
@@ -41,6 +47,7 @@ export default class ViewManager {
         console.log(`attach ${id}`);
         v.view.attach(this.app.window);
         v.attached = true;
+        this.focused = v.view;
         return 0;
     }
 
@@ -57,6 +64,7 @@ export default class ViewManager {
         console.log(`detach ${id}`);
         v.view.detach(this.app.window);
         v.attached = false;
+        this.focused = undefined;
         return 0;
     }
 
@@ -74,6 +82,18 @@ export default class ViewManager {
             height: Math.ceil(rect.w * zoom)
         });
         return 0;
+    }
+
+    back() {
+        this.focused?.back();
+    }
+
+    forward() {
+        this.focused?.forward();
+    }
+
+    home() {
+        this.focused?.home();
     }
 
 }
