@@ -8,7 +8,8 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()],
     resolve : {
       alias: {
-        '@': resolve('src')
+        '@': resolve('src'),
+        '@shared': resolve('src/shared')
       }
     }
   },
@@ -16,7 +17,8 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()],
     resolve : {
       alias: {
-        '@': resolve('src')
+        '@': resolve('src'),
+        '@shared': resolve('src/shared')
       }
     }
   },
@@ -24,6 +26,7 @@ export default defineConfig({
     resolve: {
       alias: {
         '@': resolve('src/renderer/src'),
+        '@shared': resolve('src/shared')
       }
     },
     plugins: [vue()]
