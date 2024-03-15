@@ -28,6 +28,9 @@ export default class SecureBrowserView {
         this.view.webContents.loadURL(this.profile.homepage);
     }
 
+    destroy() {
+    }
+
     attach(window: BrowserWindow) {
         window.addBrowserView(this.view);
     }

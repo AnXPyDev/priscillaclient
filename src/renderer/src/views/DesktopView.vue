@@ -1,14 +1,18 @@
 <script lang="ts" setup>
 
 import ToolBar from '@/components/ToolBar.vue';
-import BrowserView from '@/components/BrowserView.vue';
+import Desktop, { DesktopBrowser, DesktopLayout } from '@/components/Desktop.vue';
+import { ref } from 'vue';
+
+const layout = ref<DesktopLayout>("layout-horizontal");
+const browsers = ref<DesktopBrowser[]>([]);
 
 </script>
 
 <template>
     <div class="MainView">
         <ToolBar class="ToolBar"></ToolBar>        
-        <BrowserView id="priscilla" profile="priscilla" class="BrowserView"></BrowserView>
+        <Desktop class="Desktop" :browsers="browsers" :layout="layout"></Desktop>
     </div>
 </template>
 

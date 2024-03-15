@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import MainView from '@/views/MainView.vue';
+import DesktopView from '@/views/DesktopView.vue';
 
 export default createRouter({
     routes: [
-        { path: "/", component: MainView }
+        { path: "/", redirect: "/index" },
+        { name: "desktop", path: "/desktop", component: DesktopView }
     ],
     history: createWebHistory()
 });

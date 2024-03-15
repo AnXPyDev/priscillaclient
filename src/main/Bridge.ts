@@ -21,6 +21,7 @@ export default class Bridge {
         this.on('BrowserView-attach', (id: string) => this.app.viewManager.attach(id));
         this.on('BrowserView-detach', (id: string) => this.app.viewManager.detach(id));
         this.on('BrowserView-resize', (id: string, rect: Rect) => this.app.viewManager.resize(id, rect));
+        this.on('BrowserView-destroy', (id: string) => this.app.viewManager.destroy(id));
         this.on('Browser-home', () => this.app.viewManager.home());
         this.on('Browser-back', () => this.app.viewManager.back());
         this.on('Browser-forward', () => this.app.viewManager.forward());

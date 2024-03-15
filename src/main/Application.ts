@@ -56,8 +56,8 @@ export default class Application {
             autoHideMenuBar: true,
             ...(process.platform === 'linux' ? { icon } : {}),
             webPreferences: {
-            preload: join(__dirname, '../preload/index.js'),
-            sandbox: false
+                preload: join(__dirname, '../preload/index.js'),
+                sandbox: false
             }
         });
 
@@ -86,8 +86,8 @@ export default class Application {
 
         this.window.setKiosk(this.isKiosk);
         this.window.setAlwaysOnTop(this.isKiosk, "screen-saver");
-        this.window.setFullScreen(this.isKiosk);
         this.window.setFullScreenable(!this.isKiosk);
+        this.window.setFullScreen(this.isKiosk);
         this.window.setMinimizable(!this.isKiosk);
         this.window.setClosable(!this.isKiosk);
     }

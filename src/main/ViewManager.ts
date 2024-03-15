@@ -34,6 +34,16 @@ export default class ViewManager {
         return 0;
     }
 
+    destroy(id: string) {
+        const v = this.views.get(id);
+        if (!v) {
+            console.warn(`View ${id} does not exist`);
+            return 1;
+        }
+        v.view.destroy();
+        this.views.delete(id);
+    }
+
     attach(id: string) {
         const v = this.views.get(id);
         if (!v) {
