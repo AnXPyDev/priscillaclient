@@ -4,7 +4,7 @@ import DesktopView from '@/views/DesktopView.vue';
 
 export default createRouter({
     routes: [
-        { path: "/", redirect: "/index" },
+        { path: "/", redirect: "/desktop" },
         { name: "desktop", path: "/desktop", component: DesktopView }
     ],
     history: createWebHistory()

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 
 import BrowserView from '@/lib/bridge/BrowserView';
-import { ref, onMounted, onDeactivated, onActivated } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { bridge } from '@/lib/Bridge';
 
 const props = defineProps<{
@@ -13,11 +13,11 @@ const region = ref<HTMLElement | null>(null) as any;
 
 const view = new BrowserView(bridge, props.id, props.profile);
 
-onActivated(() => {
+onMounted(() => {
     view.attach(region.value);
 });
 
-onDeactivated(() => {
+onUnmounted(() => {
     view.detach();
 });
 

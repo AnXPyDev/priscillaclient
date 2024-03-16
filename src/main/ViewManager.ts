@@ -89,7 +89,7 @@ export default class ViewManager {
             x: Math.floor(rect.x * zoom),
             y: Math.floor(rect.y * zoom),
             width: Math.ceil(rect.w * zoom),
-            height: Math.ceil(rect.w * zoom)
+            height: Math.ceil(rect.h * zoom)
         });
         return 0;
     }

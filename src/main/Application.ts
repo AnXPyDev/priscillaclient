@@ -46,6 +46,15 @@ export default class Application {
             homepage: "https://priscilla.fitped.eu",
             log: true 
         }));
+        this.webProfileManager.add("translator", new WebProfile("translator", {
+            filter: new DomainWebFilter([
+                /translate\.google\..*/,
+                /consent\.google\..*/,
+                /.*gstatic\..*/
+            ]),
+            homepage: "https://translate.google.com",
+            log: true 
+        }));
     }
 
     createWindow() {

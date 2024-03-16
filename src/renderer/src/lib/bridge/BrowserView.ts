@@ -13,7 +13,7 @@ export default class BrowserView {
             this.onResize(entries[0].target);
         });
 
-        //this.bridge.send('BrowserView-create', this.id, profile);
+        this.bridge.send('BrowserView-create', this.id, profile);
     }
 
     attach(element: HTMLElement) {
