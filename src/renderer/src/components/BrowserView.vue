@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 
 import BrowserView from '@/lib/bridge/BrowserView';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { bridge } from '@/lib/Bridge';
 
 const props = defineProps<{
@@ -13,7 +13,8 @@ const region = ref<HTMLElement | null>(null) as any;
 
 const view = new BrowserView(bridge, props.id, props.profile);
 
-onMounted(() => {
+onMounted(async () => {
+    await nextTick();
     view.attach(region.value);
 });
 
@@ -24,21 +25,26 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="BrowserView" ref="region">
-        <h1>Browser View [{{ props.id }}]</h1>
+    <div class="BrowserView">
+        <div class="inner" ref="region">
+            <h1>Browser View [{{ props.id }}]</h1>
+        </div>
     </div>
 </template>
 
 <style lang="scss" scoped>
 
 .BrowserView {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    .inner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }
 
-    background-color: white;
-    color: black;
-    border: 4px dashed black; 
+    background-color: var(--clr-bg-1);
+    color: var(--clr-fg);
 }
 
 </style>

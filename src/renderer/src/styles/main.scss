@@ -1,3 +1,14 @@
+@use 'lib/colors';
+@import 'lib/fonts.scss';
+
+:root.theme-light {
+    @include colors.theme(colors.$clr-light);
+}
+
+:root.theme-dark {
+    @include colors.theme(colors.$clr-dark);
+}
+
 * {
     box-sizing: border-box;
 }
@@ -7,4 +18,10 @@ html, body, #app {
     padding: 0;
     width: 100%;
     height: 100%;
+}
+
+body {
+    background-color: var(--clr-bg-base);
+    color: var(--clr-fg);
+    font-family: 'Roboto', sans-serif;
 }

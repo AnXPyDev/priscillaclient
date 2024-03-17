@@ -6,7 +6,7 @@
 
 <style lang="scss" scoped>
 .ToolBar {
-    background-color: #404040;
+    background-color: var(--clr-bg-base);
     width: 60px;
     height: 100%;
     display: flex;

@@ -1,0 +1,24 @@
+$shadow-opacity: 0.20;
+
+$clr-dark: (
+    bg-base: #404040,
+    bg-1: #606060,
+    bg-hover-1: #505050,
+    shadow: rgba(100%,100%,100%,$shadow-opacity),
+    fg: #FFFFFF
+);
+
+$clr-light: (
+    bg-base: #FFFFFF,
+    bg-1: #DDDDDD,
+    bg-hover-1: #CCCCCC,
+    shadow: rgba(0%,0%,0%,$shadow-opacity),
+    fg: #101010
+);
+
+
+@mixin theme($theme) {
+    @each $name, $value in $theme {
+        --clr-#{$name}: #{$value};
+    }
+}

@@ -1,22 +1,29 @@
 <script lang="ts" setup>
 
 import ToolBar from '@/components/ToolBar.vue';
-import Desktop, { DesktopBrowser, DesktopLayout } from '@/components/Desktop.vue';
+import Desktop, { DesktopBrowser, DesktopLayout, DesktopLayouts } from '@/components/Desktop.vue';
 import { computed, ref } from 'vue';
 import { bridge } from '@/lib/Bridge';
+import ToolBarButton from '@/components/ToolBarButton.vue';
+import { currentTheme, rotateTheme, setTheme } from '@/lib/theme';
 
-const layout = ref<DesktopLayout>("layout-horizontal");
 
 const browsers = ref<DesktopBrowser[]>([]);
 
+let layout_index = 0;
+
+const layout = ref<DesktopLayout>(DesktopLayouts[layout_index]);
+
 const browser_config = {
     "priscilla1": { 
-        active: true, profile: "priscilla"
+        active: true, profile: "priscilla", last_change: 0
     },
     "translator1": {
-        active: true, profile: "translator"
+        active: true, profile: "translator", last_change: 1
     }
 }
+
+let counter = Object.keys(browser_config).length;
 
 function compute_browsers() {
     const b: DesktopBrowser[] = [];
@@ -25,10 +32,15 @@ function compute_browsers() {
         if (config.active) {
             b.push({
                 id: window,
-                profile: config.profile 
+                profile: config.profile,
+                // @ts-ignore
+                index: config.last_change
             });
         }
     }
+
+    // @ts-ignore
+    b.sort((a, b) => a.index - b.index);
     browsers.value = b;
 }
 
@@ -56,23 +68,46 @@ function kiosk() {
 
 function toggleBrowser(id: string) {
     console.log(`toggle ${id}`);
+    counter++;
     browser_config[id].active = !browser_config[id].active;
+    browser_config[id].last_change = counter;
     compute_browsers();
 }
+
+function rotateLayout() {
+    layout_index = (layout_index + 1) % DesktopLayouts.length;
+    layout.value = DesktopLayouts[layout_index];
+}
+
+import LayoutIcon from '@/assets/icons/layout-horizontal.svg';
 
 </script>
 
 <template>
     <div class="DesktopView">
         <ToolBar class="ToolBar">
-            <button @click="home()">H</button>
-            <button @click="back()"><</button>
-            <button @click="forward()">></button>
-            <button @click="kiosk()">K</button>
-            <button @click="quit()">X</button>
-            <button v-for="window in Object.keys(browser_config)" @click="toggleBrowser(window)">
+            <ToolBarButton @click="home()">
+                <i class="fa-solid fa-house"></i>
+            </ToolBarButton>
+            <ToolBarButton @click="back()">
+                <i class="fa-solid fa-arrow-left"></i>
+            </ToolBarButton>
+            <ToolBarButton @click="forward()">
+                <i class="fa-solid fa-arrow-right"></i>
+            </ToolBarButton>
+            <ToolBarButton @click="kiosk()">
+                <i class="fa-solid fa-maximize"></i>
+            </ToolBarButton>
+            <ToolBarButton @click="rotateLayout()">
+                <i class="fa-solid fa-chart-tree-map"></i>
+            </ToolBarButton>
+            <ToolBarButton @click="rotateTheme()">
+                <i class="fa-solid fa-circle-half-stroke"></i>
+            </ToolBarButton>
+            <div class="spacing"></div>
+            <ToolBarButton v-for="window in Object.keys(browser_config)" @click="toggleBrowser(window)">
                 {{ window.substring(0, 2).toUpperCase() }}
-            </button>
+            </ToolBarButton>
         </ToolBar>        
         <Desktop class="Desktop" :browsers="browsers" :layout="layout"></Desktop>
     </div>
@@ -83,8 +118,19 @@ function toggleBrowser(id: string) {
     display: flex;
     align-items: center;
 
-    * {
+    > * {
         height: 100%;
+    }
+
+    .ToolBar {
+        > * {
+            width: 100%;
+        }
+
+        .spacing {
+            flex-grow: 99;
+        }
+
     }
 
     .Desktop {

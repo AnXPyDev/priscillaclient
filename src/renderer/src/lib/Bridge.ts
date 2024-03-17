@@ -8,7 +8,6 @@ export default class Bridge {
         const response = window.electron.ipcRenderer.sendSync(signal, ...args);
         if (this.log) {
             console.log(`Bridge RND: ${signal} -> ${response}`);
-            console.log(response);
         }
         return response;
     }
