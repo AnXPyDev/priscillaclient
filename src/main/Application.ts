@@ -6,11 +6,15 @@ import Bridge from '@/main/Bridge'
 import ViewManager from './ViewManager'
 import { WebProfile, WebProfileManager } from './web/WebProfile'
 import { DomainWebFilter } from './web/WebFilter'
+import IntegrityManager from './integrity/IntegrityManager'
+import WindowEvents from './integrity/modules/WindowEvents'
+import Vanguard from './integrity/modules/vanguard/Vanguard'
 
 export default class Application {
     bridge = new Bridge(this);
     webProfileManager = new WebProfileManager();
     viewManager =  new ViewManager(this);
+    integrityManager = new IntegrityManager(this);
     // @ts-ignore
     window: BrowserWindow;
 
@@ -29,10 +33,16 @@ export default class Application {
         electronApp.setAppUserModelId('ukf.priscillaclient')
 
         this.createWindow();
-
+        
         app.on('browser-window-created', (_, window) => {
             optimizer.watchWindowShortcuts(window)
         })
+    }
+
+    initIntegrity() {
+        this.integrityManager.addModule(new WindowEvents());
+        this.integrityManager.addModule(new Vanguard());
+        this.integrityManager.start();
     }
 
     initProfiles() {
@@ -72,6 +82,15 @@ export default class Application {
 
         this.window.on('ready-to-show', () => {
             this.window.show()
+        })
+
+        let first_show = true;
+        this.window.on('show', () => {
+            if (first_show) {
+                console.log(`HWND: ${this.window.getNativeWindowHandle().toString('hex')}`);
+                this.initIntegrity();
+                first_show = false;
+            }
         })
 
         this.window.webContents.setWindowOpenHandler((details) => {
