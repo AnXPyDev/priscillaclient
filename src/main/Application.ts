@@ -12,11 +12,10 @@ import Vanguard from './integrity/modules/vanguard/Vanguard'
 
 export default class Application {
     bridge = new Bridge(this);
-    webProfileManager = new WebProfileManager();
+    webProfileManager = new WebProfileManager(this);
     viewManager =  new ViewManager(this);
     integrityManager = new IntegrityManager(this);
-    // @ts-ignore
-    window: BrowserWindow;
+    window!: BrowserWindow;
 
     isKiosk = false;
 
@@ -46,7 +45,7 @@ export default class Application {
     }
 
     initProfiles() {
-        this.webProfileManager.add("priscilla", new WebProfile("priscilla", {
+        this.webProfileManager.add(new WebProfile("priscilla", {
             filter: new DomainWebFilter([
                 /.*\.fitped\.eu/,
                 /cdn.\.*/,
@@ -56,7 +55,7 @@ export default class Application {
             homepage: "https://priscilla.fitped.eu",
             log: true 
         }));
-        this.webProfileManager.add("translator", new WebProfile("translator", {
+        this.webProfileManager.add(new WebProfile("translator", {
             filter: new DomainWebFilter([
                 /translate\.google\..*/,
                 /consent\.google\..*/,
@@ -87,7 +86,7 @@ export default class Application {
         let first_show = true;
         this.window.on('show', () => {
             if (first_show) {
-                console.log(`HWND: ${this.window.getNativeWindowHandle().toString('hex')}`);
+                console.log(`Window handle: ${this.window.getNativeWindowHandle().toString('hex')}`);
                 this.initIntegrity();
                 first_show = false;
             }

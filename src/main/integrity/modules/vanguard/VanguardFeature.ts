@@ -5,8 +5,7 @@ export enum VanguardMessageCode {
 };
 
 export default abstract class VanguardFeature {
-    // @ts-ignore
-    vanguard: Vanguard;
+    vanguard!: Vanguard;
 
     attach(vanguard: Vanguard) {
         this.vanguard = vanguard;

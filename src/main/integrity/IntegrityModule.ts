@@ -2,8 +2,7 @@ import IntegrityEvent, { Severity } from "./IntegrityEvent";
 import IntegrityManager from "./IntegrityManager";
 
 export default abstract class IntegrityModule {
-    // @ts-ignore
-    manager: IntegrityManager;
+    manager!: IntegrityManager;
 
     abstract getName(): string;
 

@@ -1,13 +1,15 @@
-import { Session, session } from "electron";
+import { Session, app, session } from "electron";
 import WebFilter from "./WebFilter";
 import { Sieve } from "./WebFilter";
-import { URL } from "url";
+import Application from "../Application";
+import IntegrityEvent, { Severity } from "../integrity/IntegrityEvent";
 
 export class WebProfile {
     name: string;
     filters: WebFilter[];
     log: boolean;
     homepage: string;
+    manager!: WebProfileManager;
 
     constructor(name: string, options: {
         filters?: WebFilter[],
@@ -24,6 +26,10 @@ export class WebProfile {
         }
     }
 
+    attach(manager: WebProfileManager) {
+        this.manager = manager;
+    }
+
     isAllowedURL(url: string): boolean {
         for (const filter of this.filters) {
             if (filter.isAllowedURL(url)) {
@@ -31,7 +37,9 @@ export class WebProfile {
             }
         }
 
-        console.warn(`Profile ${this.name} BLOCKED ${url}`);
+        const integrityManager = this.manager.application.integrityManager;
+        integrityManager.submitEvent(new IntegrityEvent("WebProfile", new Date(Date.now()), Severity.INFO, `${this.name} BLOCKED ${url}`));
+
         return false;
     }
 
@@ -43,8 +51,13 @@ export class WebProfile {
 }
 
 export class WebProfileManager {
+    application: Application;
     profiles = new Map<string, WebProfile>();
     defaultProfile = new WebProfile("defaultProfile", { filter: new Sieve() });
+
+    constructor(application: Application) {
+        this.application = application;
+    }
 
     get(name: string): WebProfile {
         let profile = this.profiles.get(name);
@@ -55,12 +68,14 @@ export class WebProfileManager {
         return profile;
     }
 
-    add(name: string, profile: WebProfile) {
-        if (this.profiles.has(name)) {
-            console.warn(`WebProfile ${name} already exists`);
+
+    add(profile: WebProfile) {
+        if (this.profiles.has(profile.name)) {
+            console.warn(`WebProfile ${profile.name} already registered`);
             return;
         }
-        this.profiles.set(name, profile);
+        this.profiles.set(profile.name, profile);
+        profile.attach(this);
     }
 
 }

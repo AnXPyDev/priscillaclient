@@ -2,13 +2,11 @@ import { Severity } from "@/main/integrity/IntegrityEvent";
 import VanguardFeature, { VanguardMessageCode } from "../VanguardFeature";
 
 export default class ForegroundWindow extends VanguardFeature {
-    // @ts-ignore
-    window_handle: bigint;
-    // @ts-ignore
-    last_detected_window_handle: bigint;
+    window_handle!: Buffer;
+    last_detected_window_handle!: Buffer;
 
     start(): void {
-        this.window_handle = this.vanguard.manager.application.window.getNativeWindowHandle().readBigInt64LE();
+        this.window_handle = this.vanguard.manager.application.window.getNativeWindowHandle(); 
         this.last_detected_window_handle = this.window_handle;
     }
 
@@ -16,17 +14,15 @@ export default class ForegroundWindow extends VanguardFeature {
         return [VanguardMessageCode.FOREGROUND_WINDOW];
     }
 
-    handleFGW(message: Buffer) {
-        const handle = message.readBigInt64LE();
-
-        if (this.last_detected_window_handle == handle) {
+    handleFGW(handle: Buffer) {
+        if (this.last_detected_window_handle.equals(handle)) {
             return;
         }
 
         this.last_detected_window_handle = handle;
 
-        if (this.window_handle != handle) {
-            this.vanguard.submitEvent(Severity.BREACH, `Different window in foreground ${handle}`);
+        if (!this.window_handle.equals(handle)) {
+            this.vanguard.submitEvent(Severity.BREACH, `Different window in foreground ${handle.toString("hex")}`);
         } else {
             this.vanguard.submitEvent(Severity.INFO, "Client back in foreground");
         }

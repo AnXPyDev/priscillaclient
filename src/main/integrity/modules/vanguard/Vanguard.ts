@@ -5,8 +5,7 @@ import VanguardFeature, { VanguardMessageCode } from "./VanguardFeature";
 import ForegroundWindow from "./features/ForegroundWindow";
 
 export default class Vanguard extends IntegrityModule {
-    // @ts-ignore
-    process: ChildProcess;
+    process!: ChildProcess;
 
     features: VanguardFeature[] = [];
     codeMap = new Map<VanguardMessageCode, VanguardFeature>();
@@ -21,10 +20,6 @@ export default class Vanguard extends IntegrityModule {
     }
 
     start(): void {
-        for (const feature of this.features) {
-            feature.start();
-        }
-
         this.process = spawn('vanguard.exe');
         this.process.stdout?.on('data', (buffer: Buffer) => {
             const mcode = buffer.subarray(0, 4).readInt32LE();
@@ -42,6 +37,10 @@ export default class Vanguard extends IntegrityModule {
 
             feature.handleMessage(mcode as VanguardMessageCode, message);
         });
+
+        for (const feature of this.features) {
+            feature.start();
+        }
     }
 
     addFeature(feature: VanguardFeature) {
@@ -59,11 +58,11 @@ export default class Vanguard extends IntegrityModule {
     }
 
     stop(): void {
-        this.process.kill("SIGTERM");
-
         for (const feature of this.features) {
             feature.stop();
         }
+
+        this.process.kill("SIGTERM");
     }
 
 }

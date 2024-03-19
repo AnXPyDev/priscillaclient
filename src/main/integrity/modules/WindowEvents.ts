@@ -7,11 +7,11 @@ export default class WindowEvents extends IntegrityModule {
     };
 
     hideListener = () => {
-        this.submitEvent(Severity.BREACH, "Focus loss");
+        this.submitEvent(Severity.INFO, "Focus loss");
     };
 
     getName(): string {
-        return "WindowFocus";
+        return "WindowEvents";
     }
 
     start(): void {

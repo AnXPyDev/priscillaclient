@@ -11,7 +11,7 @@ export default class SecureBrowserView {
             webPreferences: {
                 devTools: false,
                 sandbox: true,
-                session: this.profile.getSession()
+                session: this.profile.getSession(),
             }
         });
 

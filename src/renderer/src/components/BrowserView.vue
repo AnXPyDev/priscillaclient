@@ -27,7 +27,7 @@ onUnmounted(() => {
 <template>
     <div class="BrowserView">
         <div class="inner" ref="region">
-            <h1>Browser View [{{ props.id }}]</h1>
+            <!--<h1>Browser View [{{ props.id }}]</h1>-->
         </div>
     </div>
 </template>
@@ -41,6 +41,7 @@ onUnmounted(() => {
         align-items: center;
         width: 100%;
         height: 100%;
+        background-color: #FFFFFF;
     }
 
     background-color: var(--clr-bg-1);
