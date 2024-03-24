@@ -1,6 +1,10 @@
 import IntegrityEvent, { Severity } from "./IntegrityEvent";
 import IntegrityManager from "./IntegrityManager";
 
+export abstract class IntegrityModuleFactory {
+    abstract create(): IntegrityModule
+}
+
 export default abstract class IntegrityModule {
     manager!: IntegrityManager;
 
@@ -16,4 +20,6 @@ export default abstract class IntegrityModule {
     submitEvent(severity: Severity, message: string) {
         this.manager.submitEvent(new IntegrityEvent(this.getName(), new Date(Date.now()), severity, message));
     }
+
+    configure(options?: object): void {}
 };

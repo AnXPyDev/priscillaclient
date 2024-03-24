@@ -3,19 +3,31 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import Bridge from '@/main/Bridge'
-import ViewManager from './ViewManager'
-import { WebProfile, WebProfileManager } from './web/WebProfile'
-import { DomainWebFilter } from './web/WebFilter'
-import IntegrityManager from './integrity/IntegrityManager'
-import WindowEvents from './integrity/modules/WindowEvents'
-import Vanguard from './integrity/modules/vanguard/Vanguard'
+import { WebProfileConfiguration, WebProfileManager } from './web/WebProfile'
+import IntegrityManager, { IntegrityConfiguration } from './integrity/IntegrityManager'
+import { ApplicationConfiguration } from './web/Application'
+import ApplicationManager from './ApplicationManager'
+import { DesktopConfiguration, RegisterParams } from '@/shared/types'
+import axios from 'axios';
 
-export default class Application {
+export interface ClientConfiguration {
+    name: string,
+    integrity?: IntegrityConfiguration;
+    webprofiles?: WebProfileConfiguration[];
+    applications?: ApplicationConfiguration[];
+};
+
+import TestProfile from "@/main/profiles/priscillatest.json";
+import Server from './Server'
+
+export default class Client {
     bridge = new Bridge(this);
     webProfileManager = new WebProfileManager(this);
-    viewManager =  new ViewManager(this);
+    appManager =  new ApplicationManager(this);
     integrityManager = new IntegrityManager(this);
+    server = new Server(this);
     window!: BrowserWindow;
+    configuration!: ClientConfiguration;
 
     isKiosk = false;
 
@@ -25,9 +37,33 @@ export default class Application {
         app.on('window-all-closed', () => this.quit());
     }
 
+    loadDesktop() {
+        this.bridge.send('Client-loadDesktop', {
+            apps: this.configuration.applications?.map((app) => ({
+                name: app.name,
+                start_open: app.start_open
+            }))
+        } as DesktopConfiguration);
+    }
+
     init() {
         this.bridge.init();
-        this.initProfiles();
+        this.bridge.on('Client-devTest', () => {
+            console.log("Starting dev test");
+            this.configure(TestProfile);
+            this.loadDesktop();
+        });
+
+        this.bridge.on('Client-register', (params: RegisterParams) => {
+            console.log(`Register: ${params.url} ${params.code}`);
+            this.server.configure({ url: params.url });
+            this.server.start().then(() => {
+                this.server.register(params.code).then((config) => {
+                    this.configure(config);
+                    this.loadDesktop();
+                })
+            });
+        });
 
         electronApp.setAppUserModelId('ukf.priscillaclient')
 
@@ -36,34 +72,6 @@ export default class Application {
         app.on('browser-window-created', (_, window) => {
             optimizer.watchWindowShortcuts(window)
         })
-    }
-
-    initIntegrity() {
-        this.integrityManager.addModule(new WindowEvents());
-        this.integrityManager.addModule(new Vanguard());
-        this.integrityManager.start();
-    }
-
-    initProfiles() {
-        this.webProfileManager.add(new WebProfile("priscilla", {
-            filter: new DomainWebFilter([
-                /.*\.fitped\.eu/,
-                /cdn.\.*/,
-                /cdnjs.\.*/,
-                /fonts.\.*/
-            ]),
-            homepage: "https://priscilla.fitped.eu",
-            log: true 
-        }));
-        this.webProfileManager.add(new WebProfile("translator", {
-            filter: new DomainWebFilter([
-                /translate\.google\..*/,
-                /consent\.google\..*/,
-                /.*gstatic\..*/
-            ]),
-            homepage: "https://translate.google.com",
-            log: true 
-        }));
     }
 
     createWindow() {
@@ -79,15 +87,15 @@ export default class Application {
             }
         });
 
+
         this.window.on('ready-to-show', () => {
             this.window.show()
         })
 
         let first_show = true;
+
         this.window.on('show', () => {
             if (first_show) {
-                console.log(`Window handle: ${this.window.getNativeWindowHandle().toString('hex')}`);
-                this.initIntegrity();
                 first_show = false;
             }
         })
@@ -102,6 +110,25 @@ export default class Application {
         } else {
             this.window.loadFile(join(__dirname, '../renderer/index.html'))
         }
+    }
+
+    configure(options: ClientConfiguration) {
+        this.configuration = options;
+        this.window.title = options.name;
+        if (options.integrity) {
+            this.integrityManager.configure(options.integrity);
+        }
+
+        if (options.webprofiles) {
+            this.webProfileManager.configure(options.webprofiles);
+        }
+
+        if (options.applications) {
+            this.appManager.configure(options.applications);
+        }
+
+        this.integrityManager.start();
+
     }
 
     kiosk() {

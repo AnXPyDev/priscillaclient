@@ -1,38 +1,42 @@
 <script lang="ts" setup>
 
 import ToolBar from '@/components/ToolBar.vue';
-import Desktop, { DesktopBrowser, DesktopLayout, DesktopLayouts } from '@/components/Desktop.vue';
-import { computed, ref } from 'vue';
+import Desktop, { DesktopApp, DesktopLayout, DesktopLayouts } from '@/components/Desktop.vue';
+import { computed, ref, onBeforeMount } from 'vue';
 import { bridge } from '@/lib/Bridge';
 import ToolBarButton from '@/components/ToolBarButton.vue';
 import { currentTheme, rotateTheme, setTheme } from '@/lib/theme';
+import { DesktopConfiguration } from '@shared/types';
+import { useConfiguration } from '@/stores/configuration';
 
+const conf = useConfiguration();
 
-const browsers = ref<DesktopBrowser[]>([]);
+const apps = ref<DesktopApp[]>([]);
 
 let layout_index = 0;
 
 const layout = ref<DesktopLayout>(DesktopLayouts[layout_index]);
 
-const browser_config = {
-    "priscilla1": { 
-        active: true, profile: "priscilla", last_change: 0
-    },
-    "translator1": {
-        active: true, profile: "translator", last_change: 1
-    }
+const apps_config: { [key: string]: { active: boolean, last_change: number } } = {}
+
+const app_names = ref<string[]>(conf.desktopConfiguration.apps.map((app) => app.name));
+
+let counter = 0;
+for (const app of conf.desktopConfiguration.apps) {
+    apps_config[app.name] = {
+        active: app.start_open,
+        last_change: counter
+    };
+    counter++;
 }
 
-let counter = Object.keys(browser_config).length;
-
-function compute_browsers() {
-    const b: DesktopBrowser[] = [];
-    for (const window in browser_config) {
-        const config = browser_config[window];
+function compute_apps() {
+    const b: DesktopApp[] = [];
+    for (const app in apps_config) {
+        const config = apps_config[app];
         if (config.active) {
             b.push({
-                id: window,
-                profile: config.profile,
+                name: app,
                 // @ts-ignore
                 index: config.last_change
             });
@@ -41,45 +45,39 @@ function compute_browsers() {
 
     // @ts-ignore
     b.sort((a, b) => a.index - b.index);
-    browsers.value = b;
+    apps.value = b;
 }
 
-compute_browsers();
+compute_apps();
 
 function back() {
-    bridge.send('Browser-back');
+    bridge.send('Application-back');
 }
 
 function forward() {
-    bridge.send('Browser-forward');
+    bridge.send('Application-forward');
 }
 
 function home() {
-    bridge.send('Browser-home');
+    bridge.send('Application-home');
 }
 
 function quit() {
-    bridge.send('Application-quit');
+    bridge.send('Client-quit');
 }
 
-function kiosk() {
-    bridge.send('Application-kiosk');
-}
-
-function toggleBrowser(id: string) {
+function toggleApp(id: string) {
     console.log(`toggle ${id}`);
     counter++;
-    browser_config[id].active = !browser_config[id].active;
-    browser_config[id].last_change = counter;
-    compute_browsers();
+    apps_config[id].active = !apps_config[id].active;
+    apps_config[id].last_change = counter;
+    compute_apps();
 }
 
 function rotateLayout() {
     layout_index = (layout_index + 1) % DesktopLayouts.length;
     layout.value = DesktopLayouts[layout_index];
 }
-
-import LayoutIcon from '@/assets/icons/layout-horizontal.svg';
 
 </script>
 
@@ -95,9 +93,6 @@ import LayoutIcon from '@/assets/icons/layout-horizontal.svg';
             <ToolBarButton @click="forward()">
                 <i class="fa-solid fa-arrow-right"></i>
             </ToolBarButton>
-            <ToolBarButton @click="kiosk()">
-                <i class="fa-solid fa-maximize"></i>
-            </ToolBarButton>
             <ToolBarButton @click="rotateLayout()">
                 <i class="fa-solid fa-chart-tree-map"></i>
             </ToolBarButton>
@@ -105,11 +100,11 @@ import LayoutIcon from '@/assets/icons/layout-horizontal.svg';
                 <i class="fa-solid fa-circle-half-stroke"></i>
             </ToolBarButton>
             <div class="spacing"></div>
-            <ToolBarButton v-for="window in Object.keys(browser_config)" @click="toggleBrowser(window)">
-                {{ window.substring(0, 2).toUpperCase() }}
+            <ToolBarButton v-for="app in app_names" @click="toggleApp(app)">
+                {{ app.substring(0, 2).toUpperCase() }}
             </ToolBarButton>
         </ToolBar>        
-        <Desktop class="Desktop" :browsers="browsers" :layout="layout"></Desktop>
+        <Desktop class="Desktop" :apps="apps" :layout="layout"></Desktop>
     </div>
 </template>
 

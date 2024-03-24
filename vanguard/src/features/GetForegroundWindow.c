@@ -1,4 +1,4 @@
-int GetForegroundWindow(MessageOutputStream *stream, void *payload) {
+int feature_getForegroundWindow(MessageOutputStream *stream, void *payload) {
     HWND handle = GetForegroundWindow();
     Message msg;
     msg.code = MESSAGE_GET_FOREGROUND_WINDOW;
@@ -8,4 +8,4 @@ int GetForegroundWindow(MessageOutputStream *stream, void *payload) {
     return 0;
 }
 
-const Feature FGetForegroundWindow = { &GetForegroundWindow };
+const Feature FGetForegroundWindow = { &feature_getForegroundWindow };

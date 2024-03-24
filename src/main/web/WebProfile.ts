@@ -1,8 +1,14 @@
 import { Session, app, session } from "electron";
-import WebFilter from "./WebFilter";
+import WebFilter, { DomainWebFilter } from "./WebFilter";
 import { Sieve } from "./WebFilter";
-import Application from "../Application";
+import Application from "../Client";
 import IntegrityEvent, { Severity } from "../integrity/IntegrityEvent";
+
+export interface WebProfileConfiguration {
+    name: string,
+    whitelist?: string[],
+    homepage?: string
+}
 
 export class WebProfile {
     name: string;
@@ -24,6 +30,20 @@ export class WebProfile {
         if (this.filters.length == 0) {
             console.warn(`WebProfile ${this.name} has no filters`);
         }
+    }
+
+    static fromConfig(options: WebProfileConfiguration): WebProfile {
+        let filter: WebFilter;
+        if (options.whitelist) {
+            filter = new DomainWebFilter(options.whitelist.map((regex) => new RegExp(regex)));
+        }
+
+        return new WebProfile(options.name, {
+            filter: options.whitelist && new DomainWebFilter(
+                options.whitelist.map((regex) => new RegExp(regex))
+            ),
+            homepage: options.homepage
+        });
     }
 
     attach(manager: WebProfileManager) {
@@ -78,4 +98,10 @@ export class WebProfileManager {
         profile.attach(this);
     }
 
+
+    configure(profiles: WebProfileConfiguration[]) {
+        for (const profile of profiles) {
+            this.add(WebProfile.fromConfig(profile));
+        }
+    }
 }

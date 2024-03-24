@@ -1,11 +1,16 @@
 #include <stdio.h>
-#include <signal.h>
-#include <pthread.h>
-#include <Windows.h>
-#include <winuser.h>
 #include <malloc.h>
+#include <pthread.h>
+
+#include <Windows.h>
+#include <Winuser.h>
 
 int RUNNING = 1;
+
+#include "decl.c"
+#include "message.c"
+#include "feature.c"
+#include "job.c"
 
 static void handler(int sig) {
     switch (sig) {
@@ -17,75 +22,46 @@ static void handler(int sig) {
     }
 }
 
-enum EFeatures {
-    FEATURE_FOREGROUND_WINDOW = 0,
-    FEATURE__END
-};
+Job jobs[MAX_JOBS];
 
-typedef struct {
-    pthread_mutex_t mutex;
-    FILE *fp;
-} MessageOutputStream;
-
-typedef void (*feature_fn)(MessageOutputStream *stream, void *payload);
-
-
-struct FeatureThreadOptions {
-    MessageOutputStream *stream;
-    feature_fn feature;
-    int sleep;
-    void *payload;
-};
-
-void *run_feature_thread(void *payload) {
-    struct FeatureThreadOptions options = *(struct FeatureThreadOptions*)payload;
-
-    while (RUNNING) {
-        options.feature(options.stream, options.payload);
-        Sleep(options.sleep);
-    }
-
-    return NULL;
-}
-void launch_feature_thread(pthread_t *thread, struct FeatureThreadOptions *options) {
-    pthread_create(thread, NULL, &run_feature_thread, options);
+void handle_start_job(FILE *in, MessageOutputStream *out) {
+    Size id;
+    fread(&id, sizeof(Size), 1, in);
+    jobs[id] = Job_read(in, out);
+    Job_launch(&jobs[id]);
 }
 
-struct M_foreground_window {
-    HWND handle;
-};
-
-enum EMessages {
-    MESSAGE_FOREGROUND_WINDOW
-};
-
-void foreground_window(MessageOutputStream *stream, void *payload) {
-    enum EMessages mcode = MESSAGE_FOREGROUND_WINDOW;
-    struct M_foreground_window message;
-    message.handle = GetForegroundWindow(); 
-
-    pthread_mutex_lock(&stream->mutex);
-    fwrite(&mcode, sizeof(enum EMessages), 1, stream->fp);
-    fwrite(&message, sizeof(struct M_foreground_window), 1, stream->fp);
-    fflush(stream->fp);
-    pthread_mutex_unlock(&stream->mutex);
+void handle_stop_job(FILE *in) {
+    int id;
+    fread(&id, sizeof(int), 1, in);
+    jobs[id].running = 0;
 }
+
 
 int main() {
-    MessageOutputStream stream;
-    stream.fp = stdout;
-    pthread_mutex_init(&stream.mutex, NULL);
+    FILE *in = stdin;
+    MessageOutputStream out;
+    out.file = stdout;
+    pthread_mutex_init(&out.mutex, NULL);
 
-    pthread_t fw_thread;
+    while (RUNNING) {
+        RequestCode rcode;
+        fread(&rcode, sizeof(RequestCode), 1, in);
+        switch (rcode) {
+            case REQUEST_JOB_START:
+                handle_start_job(in, &out);
+                break;
+            case REQUEST_JOB_STOP:
+                handle_stop_job(in);
+                break;
+            case REQUEST_SERVICE_STOP:
+                RUNNING = 0;
+                break;
+            default:
+                fprintf(stderr, "Invalid request code %d, aborting\n", rcode);
+                break;
+        }
+    }
 
-    struct FeatureThreadOptions fw_options;
-    fw_options.feature = &foreground_window;
-    fw_options.payload = NULL;
-    fw_options.sleep = 100;
-    fw_options.stream = &stream;
-
-    launch_feature_thread(&fw_thread, &fw_options);
-    pthread_join(fw_thread, NULL);
-
-    return 0;
+    pthread_exit(0);
 }

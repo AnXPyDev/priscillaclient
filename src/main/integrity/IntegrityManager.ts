@@ -1,19 +1,31 @@
-import Application from "../Application";
+import Client from "../Client";
 import IntegrityEvent, { Severity } from "./IntegrityEvent";
-import IntegrityModule from "./IntegrityModule";
+import IntegrityModule, { IntegrityModuleFactory } from "./IntegrityModule";
+import { VanguardFactory } from "./modules/vanguard/Vanguard";
+
+const availableModules: {
+    [name: string]: IntegrityModuleFactory
+} = {
+    "vanguard": new VanguardFactory()
+};
+
+export interface IntegrityConfiguration {
+    modules: { name: string, configuration?: object }[],
+};
 
 export default class IntegrityManager {
-    application: Application;
+    client: Client;
     modules: IntegrityModule[] = [];
     events: IntegrityEvent[] = [];
 
-    constructor(application: Application) {
-        this.application = application;
+    constructor(client: Client) {
+        this.client = client;
     }
 
     addModule(module: IntegrityModule) {
         module.attach(this);
         this.modules.push(module);
+        console.log(`Added module ${module.getName()}`);
     }
 
     submitEvent(event: IntegrityEvent) {
@@ -33,5 +45,17 @@ export default class IntegrityManager {
         }
     }
 
+    configure(options: IntegrityConfiguration) {
+        for (const module of options.modules) {
+            const factory = availableModules[module.name];
+            if (!factory) {
+                console.error(`IntegrityManager: Module ${module.name} not found`);
+                continue;
+            }
 
+            const im = factory.create();
+            im.configure(module.configuration);
+            this.addModule(im);
+        }
+    }
 };

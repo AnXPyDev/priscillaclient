@@ -1,8 +1,9 @@
 import Vanguard from "./Vanguard";
+import { MessageCode, VanguardMessage } from "./VanguardDecl";
 
-export enum VanguardMessageCode {
-    FOREGROUND_WINDOW = 0
-};
+export abstract class VanguardFeatureFactory {
+    abstract create(): VanguardFeature;
+}
 
 export default abstract class VanguardFeature {
     vanguard!: Vanguard;
@@ -14,6 +15,8 @@ export default abstract class VanguardFeature {
     start() {}
     stop() {}
 
-    abstract codes(): VanguardMessageCode[];
-    abstract handleMessage(code: VanguardMessageCode, message: Buffer): void;
+    configure(options?: object): void {};
+
+    abstract codes(): MessageCode[];
+    abstract handleMessage(message: VanguardMessage): void;
 }

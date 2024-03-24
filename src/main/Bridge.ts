@@ -1,13 +1,13 @@
 import { ipcMain } from 'electron';
 import type { Rect } from '@shared/types';
-import Application from '@/main/Application';
+import Client from '@/main/Client';
 
 
 export default class Bridge {
-    app: Application;
+    client: Client;
 
-    constructor(app: Application) {
-        this.app = app;
+    constructor(client: Client) {
+        this.client = client;
     }
 
     on(signal: string, handler: (...args: any[]) => any) {
@@ -16,17 +16,18 @@ export default class Bridge {
         });
     }
 
+    send(signal: string, ...args) {
+        this.client.window.webContents.send(signal, ...args);
+    }
+
     init() {
-        this.on('BrowserView-create', (id: string, profile: string) => this.app.viewManager.create(id, profile));
-        this.on('BrowserView-attach', (id: string) => this.app.viewManager.attach(id));
-        this.on('BrowserView-detach', (id: string) => this.app.viewManager.detach(id));
-        this.on('BrowserView-resize', (id: string, rect: Rect) => this.app.viewManager.resize(id, rect));
-        this.on('BrowserView-destroy', (id: string) => this.app.viewManager.destroy(id));
-        this.on('Browser-home', () => this.app.viewManager.home());
-        this.on('Browser-back', () => this.app.viewManager.back());
-        this.on('Browser-forward', () => this.app.viewManager.forward());
-        this.on('Application-kiosk', () => this.app.kiosk());
-        this.on('Application-quit', () => this.app.quit());
+        this.on('Application-attach', (id: string) => this.client.appManager.attach(id));
+        this.on('Application-detach', (id: string) => this.client.appManager.detach(id));
+        this.on('Application-resize', (id: string, rect: Rect) => this.client.appManager.resize(id, rect));
+        this.on('Application-home', () => this.client.appManager.home());
+        this.on('Application-back', () => this.client.appManager.back());
+        this.on('Application-forward', () => this.client.appManager.forward());
+        this.on('Client-quit', () => this.client.quit());
     }
 
 }

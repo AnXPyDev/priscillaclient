@@ -1,17 +1,28 @@
 import { Severity } from "@/main/integrity/IntegrityEvent";
-import VanguardFeature, { VanguardMessageCode } from "../VanguardFeature";
+import VanguardFeature, { VanguardFeatureFactory } from "../VanguardFeature";
+import { FeatureCode, MessageCode, VanguardMessage, VanguardRequestJobStart } from "../VanguardDecl";
+
+export class ForegroundWindowFactory extends VanguardFeatureFactory {
+    create(): VanguardFeature {
+        return new ForegroundWindow();
+    }
+}
 
 export default class ForegroundWindow extends VanguardFeature {
     window_handle!: Buffer;
     last_detected_window_handle!: Buffer;
 
     start(): void {
-        this.window_handle = this.vanguard.manager.application.window.getNativeWindowHandle(); 
+        this.window_handle = this.vanguard.manager.client.window.getNativeWindowHandle(); 
         this.last_detected_window_handle = this.window_handle;
+
+        this.vanguard.sendRequest(new VanguardRequestJobStart(
+            1, FeatureCode.FEATURE_GET_FOREGROUND_WINDOW, 100
+        ));
     }
 
-    codes(): VanguardMessageCode[] {
-        return [VanguardMessageCode.FOREGROUND_WINDOW];
+    codes(): MessageCode[] {
+        return [MessageCode.MESSAGE_GET_FOREGROUND_WINDOW];
     }
 
     handleFGW(handle: Buffer) {
@@ -28,10 +39,10 @@ export default class ForegroundWindow extends VanguardFeature {
         }
     }
 
-    handleMessage(code: VanguardMessageCode, message: Buffer): void {
-        switch (code) {
-            case VanguardMessageCode.FOREGROUND_WINDOW:
-                this.handleFGW(message);
+    handleMessage(message: VanguardMessage): void {
+        switch (message.code) {
+            case MessageCode.MESSAGE_GET_FOREGROUND_WINDOW:
+                this.handleFGW(message.message!!);
                 break;  
         }
     }

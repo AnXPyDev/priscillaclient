@@ -7,30 +7,29 @@ export const DesktopLayouts = [
 ] as const;
 
 export type DesktopLayout = typeof DesktopLayouts[number];
-export interface DesktopBrowser { id: string, profile: string };
+export interface DesktopApp { name: string };
 </script>
 
 <script lang="ts" setup>
 import { computed, defineProps } from 'vue';
-import BrowserView from './BrowserView.vue';
-
+import Application from './Application.vue';
 
 const props = defineProps<{
     layout: DesktopLayout,
-    browsers: DesktopBrowser[]
+    apps: DesktopApp[]
 }>();
 
 const others_class = computed<string>(() => {
-    return props.browsers.length == 1 ? "empty" : "full"
+    return props.apps.length == 1 ? "empty" : "full"
 })
 
 </script>
 
 <template>
     <div class="Desktop" :class="layout">
-        <BrowserView class="BrowserView priority" v-for="b in browsers.slice(0, 1)" :id="b.id" :profile="b.profile" :key="b.id+b.profile" />
+        <Application class="Application" v-for="app in apps.slice(0, 1)" :name="app.name" :key="app.name" />
         <div class="others" :class="others_class">
-            <BrowserView class="BrowserView secondary" v-for="b in browsers.slice(1)" :id="b.id" :profile="b.profile" :key="b.id+b.profile" />
+            <Application class="Application" v-for="app in apps.slice(1)" :name="app.name" :key="app.name" />
         </div>
     </div>
 </template>
@@ -41,20 +40,25 @@ const others_class = computed<string>(() => {
 
 @mixin layout($direction, $ratio) {
     $flex_direction: row;
+    $other_flex_direction: column;
     $size_property: width;
+    $other_size_property: height;
     @if $direction == vertical {
         $flex_direction: column;
+        $other_flex_direction: row;
         $size_property: height;
+        $other_size_property: width;
     }
 
     flex-direction: $flex_direction;
     &:has(.others.full) {
-        .BrowserView.priority {
+        > .Application {
             #{$size_property}: $ratio;
         }
     }
 
     .others.full {
+        flex-direction: $other_flex_direction;
         #{$size_property}: calc(100% - $ratio);
     }
 }
@@ -64,14 +68,20 @@ const others_class = computed<string>(() => {
     padding: dimens.$padding;
     gap: dimens.$padding;
 
-    .BrowserView {
+    .Application {
         width: 100%;
         height: 100%;
+        flex-grow: 1;
         box-shadow: 0 0 12px 0 var(--clr-shadow);
     }
 
-    .others.empty {
-        display: none;
+    .others {
+        display: flex;
+        gap: dimens.$padding;
+
+        &.empty {
+            display: none;
+        }
     }
 
     &.layout-horizontal {

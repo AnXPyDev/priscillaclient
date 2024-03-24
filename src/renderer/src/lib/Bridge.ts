@@ -20,6 +20,12 @@ export default class Bridge {
     async send(signal: string, ...args): Promise<any> {
         return this.sendSync(signal, ...args);
     }
+
+    on(signal: string, handler: (...args) => any) {
+        window.electron.ipcRenderer.on(signal, (event, ...args) => {
+            handler(...args);
+        })
+    }
 }
 
 export const bridge = new Bridge(true);

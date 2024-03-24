@@ -1,11 +1,15 @@
-export type Rect = {
+export interface Rect {
     x: number, y: number, w: number, h: number
 };
 
-export type Profile = {
-
+export interface DesktopConfiguration {
+    apps: {
+        name: string,
+        start_open: boolean
+    }[];
 };
 
-export type Evironment = {
-
+export interface RegisterParams {
+    url: string,
+    code: string
 };

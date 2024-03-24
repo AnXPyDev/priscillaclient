@@ -1,11 +1,19 @@
 import { BrowserView, BrowserWindow } from "electron";
-import { WebProfile } from "./web/WebProfile";
+import { WebProfile } from "./WebProfile";
 
-export default class SecureBrowserView {
+export interface ApplicationConfiguration {
+    name: string,
+    webprofile: string,
+    start_open?: boolean
+};
+
+export default class Application {
+    name: string;
     view: BrowserView;
     profile: WebProfile;
 
-    constructor(profile: WebProfile) {
+    constructor(name: string, profile: WebProfile) {
+        this.name = name;
         this.profile = profile;
         this.view = new BrowserView({
             webPreferences: {

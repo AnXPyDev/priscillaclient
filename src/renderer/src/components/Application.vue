@@ -1,17 +1,16 @@
 <script lang="ts" setup>
 
-import BrowserView from '@/lib/bridge/BrowserView';
+import Application from '@/lib/bridge/Application';
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { bridge } from '@/lib/Bridge';
 
 const props = defineProps<{
-    id: string
-    profile: string
+    name: string
 }>();
 
 const region = ref<HTMLElement | null>(null) as any;
 
-const view = new BrowserView(bridge, props.id, props.profile);
+const view = new Application(bridge, props.name);
 
 onMounted(async () => {
     await nextTick();
@@ -25,7 +24,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="BrowserView">
+    <div class="Application">
         <div class="inner" ref="region">
             <!--<h1>Browser View [{{ props.id }}]</h1>-->
         </div>
@@ -34,7 +33,7 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 
-.BrowserView {
+.Application {
     .inner {
         display: flex;
         justify-content: center;

@@ -1,3 +1,3 @@
-import Application from "./Application";
+import Client from "./Client";
 
-new Application();
+new Client();

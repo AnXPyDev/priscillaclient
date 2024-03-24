@@ -1,19 +1,33 @@
-import IntegrityModule from "@/main/integrity/IntegrityModule";
+import IntegrityModule, { IntegrityModuleFactory } from "@/main/integrity/IntegrityModule";
 import { ChildProcess, spawn } from "child_process";
 
-import VanguardFeature, { VanguardMessageCode } from "./VanguardFeature";
-import ForegroundWindow from "./features/ForegroundWindow";
+import VanguardFeature, { VanguardFeatureFactory } from "./VanguardFeature";
+import { MessageCode, VanguardMessage, VanguardRequest } from "./VanguardDecl";
+import { ForegroundWindowFactory } from "./features/ForegroundWindow";
+
+const availableFeatures: {
+    [name: string]: VanguardFeatureFactory
+} = {
+    "foreground_window": new ForegroundWindowFactory()
+}
+
+export interface VanguardConfiguration {
+    features?: {
+        [name: string]: object | boolean;
+    }
+}
+
+export class VanguardFactory extends IntegrityModuleFactory {
+    create(): IntegrityModule {
+        return new Vanguard();
+    }
+}
 
 export default class Vanguard extends IntegrityModule {
     process!: ChildProcess;
 
     features: VanguardFeature[] = [];
-    codeMap = new Map<VanguardMessageCode, VanguardFeature>();
-
-    constructor() {
-        super();
-        this.addFeature(new ForegroundWindow());
-    }
+    codeMap = new Map<MessageCode, VanguardFeature>();
 
     getName(): string {
         return "Vanguard";
@@ -21,21 +35,9 @@ export default class Vanguard extends IntegrityModule {
 
     start(): void {
         this.process = spawn('vanguard.exe');
-        this.process.stdout?.on('data', (buffer: Buffer) => {
-            const mcode = buffer.subarray(0, 4).readInt32LE();
-            if (!(mcode in VanguardMessageCode)) {
-                console.error(`Vanguard: unknown message code received ${mcode}`);
-                return;
-            }
-
-            const message = buffer.subarray(4);
-            const feature = this.codeMap.get(mcode as VanguardMessageCode);
-            if (!feature) {
-                console.error(`Vanguard: no handler for code ${VanguardMessageCode[mcode]} registered`);
-                return;
-            }
-
-            feature.handleMessage(mcode as VanguardMessageCode, message);
+        this.process.stdout?.on('data', (unread: Buffer) => this.readMessages(unread));
+        this.process.stderr?.on('data', (data: Buffer) => {
+            console.log(`Vanguard stderr: "${data.toString('utf8')}"`);
         });
 
         for (const feature of this.features) {
@@ -49,7 +51,7 @@ export default class Vanguard extends IntegrityModule {
 
         for (const code of feature.codes()) {
             if (this.codeMap.has(code)) {
-                console.warn(`Vanguard: Message Code ${VanguardMessageCode[code]} already registered`);
+                console.warn(`Vanguard: Message Code ${MessageCode[code]} already registered`);
                 continue;
             }
 
@@ -64,5 +66,56 @@ export default class Vanguard extends IntegrityModule {
 
         this.process.kill("SIGTERM");
     }
+
+    sendRequest(request: VanguardRequest) {
+        this.process.stdin?.write(request.toBuffer());
+    }
+
+
+    async handleMessage(message: VanguardMessage) {
+        const feature = this.codeMap.get(message.code);
+        if (!feature) {
+            console.error(`Vanguard: no feature registered for message code ${MessageCode[message.code]}`);
+            return;
+        }
+        feature.handleMessage(message);
+    }
+
+    readMessages(unread: Buffer) {
+        while (unread.length >= 8) {
+            const r = VanguardMessage.take(unread);
+            unread = r.unread;
+            this.handleMessage(r.message);
+        }
+    }
+
+    override configure(options: VanguardConfiguration) {
+        if (!options.features) {
+            return;
+        }
+
+        for (const name in options.features) {
+            const factory = availableFeatures[name];
+            if (!factory) {
+                console.error(`Vanguard: Feature ${name} not found`);
+                return;
+            }
+
+
+            const conf = options.features[name]; 
+            if (conf === false) {
+                continue;
+            }
+
+            const feature = factory.create();
+
+            if (typeof conf === "object") {
+                feature.configure(conf as object);
+            }
+
+            this.addFeature(feature);
+        }
+    }
+
 
 }
