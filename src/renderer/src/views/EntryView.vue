@@ -8,13 +8,20 @@ function devTest() {
     bridge.send('Client-devTest');
 }
 
-const accessCode = ref<string>("000000");
-const url = ref<string>("http://localhost:3000");
+
+const error = ref<string>("");
+
+bridge.on('Client-showError', (message: string) => {
+    error.value = message;
+});
+
+const joinCode = ref<string>("000000");
+const name = ref<string>("Meno");
 
 function connect() {
     bridge.send('Client-register', {
-        code: accessCode.value,
-        url: url.value
+        joinCode: joinCode.value,
+        name: name.value
     } as RegisterParams);
 }
 
@@ -24,9 +31,16 @@ function connect() {
     <h1>entry</h1>
     <button @click="devTest()">TestPriscilla</button>
     code
-    <input v-model="accessCode"></input>
-    url
-    <input v-model="url"></input>
+    <input v-model="joinCode"></input>
+    name
+    <input v-model="name"></input>
     <button @click="connect()">Connect</button>
 
+    <p class="error">{{ error }}</p>
 </template>
+
+<style lang="scss" scoped>
+    .error {
+        color: red;
+    }
+</style>

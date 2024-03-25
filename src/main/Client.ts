@@ -28,6 +28,14 @@ export default class Client {
     server = new Server(this);
     window!: BrowserWindow;
     configuration!: ClientConfiguration;
+    secret!: string;
+
+    errorHandler = (reason) => {
+        if (reason instanceof Error) {
+            this.bridge.send("Client-showError", reason.message);
+            console.error(`Error: ${reason.message}`);
+        }
+    }
 
     isKiosk = false;
 
@@ -55,14 +63,14 @@ export default class Client {
         });
 
         this.bridge.on('Client-register', (params: RegisterParams) => {
-            console.log(`Register: ${params.url} ${params.code}`);
-            this.server.configure({ url: params.url });
+            console.log(`Register: ${params.joinCode} ${params.name}`);
             this.server.start().then(() => {
-                this.server.register(params.code).then((config) => {
-                    this.configure(config);
+                this.server.joinRoom(params.joinCode, params.name).then((data) => {
+                    this.secret = data.secret;
+                    this.configure(data.clientConfiguration);
                     this.loadDesktop();
-                })
-            });
+                }).catch(this.errorHandler);
+            }).catch(this.errorHandler);
         });
 
         electronApp.setAppUserModelId('ukf.priscillaclient')

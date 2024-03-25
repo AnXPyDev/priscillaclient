@@ -10,6 +10,6 @@ export interface DesktopConfiguration {
 };
 
 export interface RegisterParams {
-    url: string,
-    code: string
+    joinCode: string,
+    name: string
 };

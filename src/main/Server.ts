@@ -8,14 +8,10 @@ export interface ServerConfiguration {
 export default class Server {
     client: Client;
     connection!: Axios;
-    url!: string;
+    url: string = "http://localhost:3000";
 
     constructor(client: Client) {
         this.client = client;
-    }
-
-    configure(options: ServerConfiguration) {
-        this.url = options.url;
     }
 
     async start(): Promise<void> {
@@ -27,9 +23,15 @@ export default class Server {
         console.log(`Server echo: ${JSON.stringify(res.data)}`);
     }
 
-    async register(code: string): Promise<ClientConfiguration> {
-        const res = await this.connection.post("/client/register", { code: code });
-        return res.data.clientConfiguration as ClientConfiguration;
+    async joinRoom(joinCode: string, name: string): Promise<{
+        clientConfiguration: ClientConfiguration,
+        secret: string
+    }> {
+        const res = await this.connection.post("/client/joinRoom", { joinCode, name });
+        if (res.data.code != 0) {
+            throw new Error(res.data.message);
+        }
+        return res.data;
     }
 
 };

@@ -1,5 +1,7 @@
-import { Client } from "socket.io/dist/client";
+import IntegrityEvent from "../../IntegrityEvent";
 import IntegrityModule, { IntegrityModuleFactory } from "../../IntegrityModule";
+import { Socket, io as connectSocket, io } from 'socket.io-client';
+
 
 export class SupervisorFactory extends IntegrityModuleFactory {
     create(): IntegrityModule {
@@ -7,22 +9,33 @@ export class SupervisorFactory extends IntegrityModuleFactory {
     }
 }
 
-interface SueprvisorOptions {
-    port: string
-};
-
 export default class Supervisor extends IntegrityModule {
-    port!: string
+
+    socket?: Socket;
 
     getName(): string {
         return "Supervisor";
     }
+
     start(): void {
+        const socket = io("ws://localhost:3001/supervisor", {
+            auth: {
+                secret: this.manager.client.secret
+            }
+        });
+
+        socket.on("message", (message) => {
+            console.log(`Supervisor message: ${message}`)
+        });
+
+        this.manager.emitter.on("IE", (event: IntegrityEvent) => {
+            socket.emit("integrityEvent", event);
+        });
+
+        this.socket = socket;
     }
+
     stop(): void {
-    }
-
-    override configure(options?: object): void {
-
+        this.socket?.disconnect()
     }
 }

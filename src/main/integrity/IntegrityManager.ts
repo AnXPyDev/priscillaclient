@@ -1,12 +1,15 @@
+import EventEmitter from "events";
 import Client from "../Client";
 import IntegrityEvent, { Severity } from "./IntegrityEvent";
 import IntegrityModule, { IntegrityModuleFactory } from "./IntegrityModule";
 import { VanguardFactory } from "./modules/vanguard/Vanguard";
+import { SupervisorFactory } from "./modules/supervisor/Supervisor";
 
 const availableModules: {
     [name: string]: IntegrityModuleFactory
 } = {
-    "vanguard": new VanguardFactory()
+    "vanguard": new VanguardFactory(),
+    "supervisor": new SupervisorFactory()
 };
 
 export interface IntegrityConfiguration {
@@ -16,7 +19,8 @@ export interface IntegrityConfiguration {
 export default class IntegrityManager {
     client: Client;
     modules: IntegrityModule[] = [];
-    events: IntegrityEvent[] = [];
+    eventLog: IntegrityEvent[] = [];
+    emitter: EventEmitter = new EventEmitter();
 
     constructor(client: Client) {
         this.client = client;
@@ -29,8 +33,9 @@ export default class IntegrityManager {
     }
 
     submitEvent(event: IntegrityEvent) {
-        this.events.push(event);
-        console.log(event.toString());
+        this.eventLog.push(event);
+        this.emitter.emit("IE", event);
+        //console.log(event.toString());
     }
 
     start() {
