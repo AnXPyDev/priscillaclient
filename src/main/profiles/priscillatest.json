@@ -9,7 +9,14 @@
                         "foreground_window": true
                     }
                 }
+            },
+            {
+                "name": "supervisor",
+                "configuration": {
+                    "protocol": "log"
+                }
             }
+
         ]
     },
     "webprofiles": [

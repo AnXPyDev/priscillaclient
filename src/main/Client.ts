@@ -34,6 +34,7 @@ export default class Client {
         if (reason instanceof Error) {
             this.bridge.send("Client-showError", reason.message);
             console.error(`Error: ${reason.message}`);
+            console.error(reason.stack);
         }
     }
 
@@ -58,16 +59,16 @@ export default class Client {
         this.bridge.init();
         this.bridge.on('Client-devTest', () => {
             console.log("Starting dev test");
-            this.configure(TestProfile);
+            this.configure("Priscilla Test Profile", TestProfile);
             this.loadDesktop();
         });
 
         this.bridge.on('Client-register', (params: RegisterParams) => {
             console.log(`Register: ${params.joinCode} ${params.name}`);
-            this.server.start().then(() => {
+            this.server.start({url: params.url}).then(() => {
                 this.server.joinRoom(params.joinCode, params.name).then((data) => {
                     this.secret = data.secret;
-                    this.configure(data.clientConfiguration);
+                    this.configure(data.roomName, data.clientConfiguration);
                     this.loadDesktop();
                 }).catch(this.errorHandler);
             }).catch(this.errorHandler);
@@ -79,7 +80,7 @@ export default class Client {
         
         app.on('browser-window-created', (_, window) => {
             optimizer.watchWindowShortcuts(window)
-        })
+        });
     }
 
     createWindow() {
@@ -120,9 +121,10 @@ export default class Client {
         }
     }
 
-    configure(options: ClientConfiguration) {
+    configure(roomName: string, options: ClientConfiguration) {
         this.configuration = options;
-        this.window.title = options.name;
+        this.window.title = roomName;
+
         if (options.integrity) {
             this.integrityManager.configure(options.integrity);
         }

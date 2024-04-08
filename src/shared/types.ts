@@ -11,5 +11,6 @@ export interface DesktopConfiguration {
 
 export interface RegisterParams {
     joinCode: string,
-    name: string
+    name: string,
+    url: string
 };

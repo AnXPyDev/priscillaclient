@@ -59,8 +59,8 @@ export default class IntegrityManager {
             }
 
             const im = factory.create();
-            im.configure(module.configuration);
             this.addModule(im);
+            im.configure(module.configuration);
         }
     }
 };
