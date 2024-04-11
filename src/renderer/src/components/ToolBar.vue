@@ -1,17 +1,36 @@
+<script setup lang="ts">
+
+withDefaults(defineProps<{
+    direction?: "horizontal" | "vertical"
+}>(), {
+    direction: "vertical"
+});
+
+</script>
+
 <template>
-    <div class="ToolBar">
+    <div class="ToolBar" :class="direction">
         <slot></slot>
     </div>
 </template>
 
 <style lang="scss" scoped>
+@use '@/styles/lib/dimens';
+
 .ToolBar {
     background-color: var(--clr-bg-base);
-    width: 50px;
-    height: 100%;
     display: flex;
-    flex-direction: column;
-    padding: 10px;
-    gap: 10px;
+    padding: dimens.$padding;
+    gap: dimens.$padding;
+
+    align-items: center;
+
+    &.horizontal {
+        flex-direction: row;
+    }
+
+    &.vertical {
+        flex-direction: column;
+    }
 }
 </style>

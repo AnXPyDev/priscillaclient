@@ -1,8 +1,10 @@
 <script lang="ts" setup>
 
 import Application from '@/lib/bridge/Application';
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { bridge } from '@/lib/Bridge';
+import { useState } from '@/stores/state';
+import { storeToRefs } from 'pinia';
 
 const props = defineProps<{
     name: string
@@ -11,6 +13,19 @@ const props = defineProps<{
 const region = ref<HTMLElement | null>(null) as any;
 
 const view = new Application(bridge, props.name);
+
+const state = useState();
+
+const { desktop_obstructed } = storeToRefs(state);
+
+watch(desktop_obstructed, (value) => {
+    if (value > 0) {
+        view.hide();
+        return;
+    }
+
+    view.show();
+});
 
 onMounted(async () => {
     await nextTick();

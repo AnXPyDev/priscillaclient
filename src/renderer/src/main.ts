@@ -16,16 +16,25 @@ const app = createApp(App);
 app.use(router);
 app.use(pinia);
 
-app.mount('#app');
-
 import { useConfiguration } from './stores/configuration';
+import { useState } from './stores/state';
 
 const configuration = useConfiguration();
+const state = useState();
 
 import { bridge } from './lib/Bridge';
 import { DesktopConfiguration } from '@shared/types';
 
 bridge.on('Client-loadDesktop', (config: DesktopConfiguration) => {
+    state.connected = true;
     configuration.desktopConfiguration = config; 
     router.push({ name: "desktop" });
 });
+
+router.afterEach((to) => {
+    state.current_route = to.name?.toString()!!;
+    console.log(state.current_route);
+});
+
+
+app.mount('#app');

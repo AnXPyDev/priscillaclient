@@ -27,6 +27,8 @@ function connect() {
     } as RegisterParams);
 }
 
+console.log("JKLFJLAKFJKAL");
+
 </script>
 
 <template>

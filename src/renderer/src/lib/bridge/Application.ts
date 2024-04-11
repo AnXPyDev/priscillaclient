@@ -25,6 +25,14 @@ export default class Application {
         return this.bridge.send('Application-detach', this.id);
     }
 
+    hide() {
+        return this.bridge.send('Application-detach', this.id);
+    }
+
+    show() {
+        return this.bridge.send('Application-attach', this.id);
+    }
+
     onResize(element: Element) {
         const rect = element.getClientRects()[0];
 

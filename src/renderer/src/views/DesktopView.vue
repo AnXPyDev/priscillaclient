@@ -2,12 +2,12 @@
 
 import ToolBar from '@/components/ToolBar.vue';
 import Desktop, { DesktopApp, DesktopLayout, DesktopLayouts } from '@/components/Desktop.vue';
-import { computed, ref, onBeforeMount } from 'vue';
+import { ref } from 'vue';
 import { bridge } from '@/lib/Bridge';
 import ToolBarButton from '@/components/ToolBarButton.vue';
-import { currentTheme, rotateTheme, setTheme } from '@/lib/theme';
-import { DesktopConfiguration } from '@shared/types';
+import { rotateTheme } from '@/lib/theme';
 import { useConfiguration } from '@/stores/configuration';
+import { useState } from '@/stores/state';
 
 const conf = useConfiguration();
 
@@ -79,6 +79,16 @@ function rotateLayout() {
     layout.value = DesktopLayouts[layout_index];
 }
 
+const state = useState();
+
+function hide() {
+    if (state.desktop_obstructed > 0) {
+        state.desktop_obstructed = 0;
+        return;
+    }
+    state.desktop_obstructed = 1;
+}
+
 </script>
 
 <template>
@@ -98,6 +108,9 @@ function rotateLayout() {
             </ToolBarButton>
             <ToolBarButton @click="rotateTheme()">
                 <i class="fa-solid fa-circle-half-stroke"></i>
+            </ToolBarButton>
+            <ToolBarButton @click="hide()">
+                H
             </ToolBarButton>
             <div class="spacing"></div>
             <ToolBarButton v-for="app in app_names" @click="toggleApp(app)">
@@ -130,6 +143,7 @@ function rotateLayout() {
 
     .Desktop {
         flex-grow: 1;
+        height: 100%;
     }
 }
 </style>
