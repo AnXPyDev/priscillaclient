@@ -89,6 +89,10 @@ function hide() {
     state.desktop_obstructed = 1;
 }
 
+function sendRequest() {
+    bridge.send("Client-sendRequest");
+}
+
 </script>
 
 <template>
@@ -111,6 +115,9 @@ function hide() {
             </ToolBarButton>
             <ToolBarButton @click="hide()">
                 H
+            </ToolBarButton>
+            <ToolBarButton @click="sendRequest()">
+                <i class="fa-solid fa-envelope"></i>
             </ToolBarButton>
             <div class="spacing"></div>
             <ToolBarButton v-for="app in app_names" @click="toggleApp(app)">
