@@ -79,6 +79,10 @@ function rotateLayout() {
     layout.value = DesktopLayouts[layout_index];
 }
 
+function sendRequest() {
+    bridge.send("Client-sendRequest");
+}
+
 </script>
 
 <template>
@@ -98,6 +102,9 @@ function rotateLayout() {
             </ToolBarButton>
             <ToolBarButton @click="rotateTheme()">
                 <i class="fa-solid fa-circle-half-stroke"></i>
+            </ToolBarButton>
+            <ToolBarButton @click="sendRequest()">
+                <i class="fa-solid fa-envelope"></i>
             </ToolBarButton>
             <div class="spacing"></div>
             <ToolBarButton v-for="app in app_names" @click="toggleApp(app)">

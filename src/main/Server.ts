@@ -34,6 +34,11 @@ export default class Server {
         this.features = res.data;
     }
 
+    async sendRequest() {
+        const res = await this.connection.post("/client/request", {secret: this.client.secret, data: {message: "hello"}});
+        console.log(JSON.stringify(res.data));
+    }
+
     async joinRoom(joinCode: string, name: string): Promise<{
         clientConfiguration: ClientConfiguration,
         roomName: string,
