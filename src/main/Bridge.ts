@@ -28,7 +28,7 @@ export default class Bridge {
         this.on('Application-back', () => this.client.appManager.back());
         this.on('Application-forward', () => this.client.appManager.forward());
         this.on('Client-quit', () => this.client.quit());
-        this.on('Client-sendRequest', () => this.client.server.sendRequest());
+        this.on('Client-testLock', () => this.client.state.lock());
     }
 
 }

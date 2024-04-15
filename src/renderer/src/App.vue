@@ -7,6 +7,7 @@ import String from './components/String.vue';
 import { useState } from './stores/state';
 import router from './router';
 import ToolBarButton from './components/ToolBarButton.vue';
+import { bridge } from './lib/Bridge';
 
 const state = useState();
 
@@ -25,12 +26,8 @@ function toggleSettings() {
     return router.replace({ name: "settings" });
 }
 
-function toggleLockdown() {
-    if (state.current_route == "lockdown") {
-        return goHome();
-    }
-
-    return router.replace({ name: "lockdown" });
+function lockSession() {
+    bridge.send("Client-testLock");
 }
 
 </script>
@@ -40,12 +37,14 @@ function toggleLockdown() {
         <RouterView class="RouterView"></RouterView>
         <ToolBar class="StatusBar" direction="horizontal">
             <LoadingIndicator v-if="state.loading > 0"/>
-            <ToolBarButton :active="state.current_route == 'settings'" @click="toggleSettings()">
-                <i class="fa-solid fa-gear"></i>
-            </ToolBarButton>
-            <ToolBarButton :active="state.current_route == 'lockdown'" @click="toggleLockdown()">
-                <i class="fa-solid fa-lock-keyhole"></i>
-            </ToolBarButton>
+            <template v-if="!state.lockdown_mode">
+                <ToolBarButton :active="state.current_route == 'settings'" @click="toggleSettings()">
+                    <i class="fa-solid fa-gear"></i>
+                </ToolBarButton>
+                <ToolBarButton :active="state.current_route == 'lockdown'" @click="lockSession()">
+                    <i class="fa-solid fa-lock-keyhole"></i>
+                </ToolBarButton>
+            </template>
             <span>{{ state.current_route }}</span>
             <String name="lang_name"/>
         </ToolBar>

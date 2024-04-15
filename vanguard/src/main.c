@@ -6,11 +6,13 @@
 #include <Winuser.h>
 
 int RUNNING = 1;
+HWND clientWindowHandle = NULL;
 
 #include "decl.c"
 #include "message.c"
 #include "feature.c"
 #include "job.c"
+#include "command.c"
 
 static void handler(int sig) {
     switch (sig) {
@@ -31,9 +33,13 @@ void handle_start_job(FILE *in, MessageOutputStream *out) {
     Job_launch(&jobs[id]);
 }
 
+void handle_command(FILE *in, MessageOutputStream *out) {
+    Command_read_and_run(in, out);
+}
+
 void handle_stop_job(FILE *in) {
-    int id;
-    fread(&id, sizeof(int), 1, in);
+    Size id;
+    fread(&id, sizeof(Size), 1, in);
     jobs[id].running = 0;
 }
 
@@ -53,6 +59,9 @@ int main() {
                 break;
             case REQUEST_JOB_STOP:
                 handle_stop_job(in);
+                break;
+            case REQUEST_COMMAND:
+                handle_command(in, &out);
                 break;
             case REQUEST_SERVICE_STOP:
                 RUNNING = 0;

@@ -34,7 +34,6 @@ console.log("JKLFJLAKFJKAL");
 <template>
     <div class="container">
         <h1>entry</h1>
-        <button @click="devTest()">TestPriscilla</button>
         url
         <input v-model="url"></input>
         code
@@ -42,6 +41,7 @@ console.log("JKLFJLAKFJKAL");
         name
         <input v-model="name"></input>
         <button @click="connect()">Connect</button>
+        <button @click="devTest()">Dev Test</button>
         <p class="error">{{ error }}</p>
     </div>
 </template>

@@ -2,7 +2,7 @@ import IntegrityModule, { IntegrityModuleFactory } from "@/main/integrity/Integr
 import { ChildProcess, spawn } from "child_process";
 
 import VanguardFeature, { VanguardFeatureFactory } from "./VanguardFeature";
-import { MessageCode, VanguardMessage, VanguardRequest } from "./VanguardDecl";
+import { FeatureCode, MessageCode, VanguardMessage, VanguardRequest, VanguardRequestCommand } from "./VanguardDecl";
 import { ForegroundWindowFactory } from "./features/ForegroundWindow";
 
 const availableFeatures: {
@@ -39,6 +39,11 @@ export default class Vanguard extends IntegrityModule {
         this.process.stderr?.on('data', (data: Buffer) => {
             console.log(`Vanguard stderr: "${data.toString('utf8')}"`);
         });
+
+        this.sendRequest(new VanguardRequestCommand(
+            FeatureCode.FEATURE_SET_HANDLE,
+            this.manager.client.window.getNativeWindowHandle()
+        ));
 
         for (const feature of this.features) {
             feature.start();

@@ -31,6 +31,16 @@ bridge.on('Client-loadDesktop', (config: DesktopConfiguration) => {
     router.push({ name: "desktop" });
 });
 
+bridge.on('Client-lock', () => {
+    state.lockdown_mode = true;
+    router.replace({ name: "lockdown" });
+});
+
+bridge.on('Client-unlock', () => {
+    state.lockdown_mode = false;
+    router.replace({ name: (state.connected ? "desktop" : "entry") });
+})
+
 router.afterEach((to) => {
     state.current_route = to.name?.toString()!!;
     console.log(state.current_route);

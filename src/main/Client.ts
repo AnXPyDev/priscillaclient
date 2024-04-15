@@ -19,6 +19,7 @@ export interface ClientConfiguration {
 
 import TestProfile from "@/main/profiles/priscillatest.json";
 import Server from './Server'
+import State from './State'
 
 export default class Client {
     bridge = new Bridge(this);
@@ -26,9 +27,9 @@ export default class Client {
     appManager =  new ApplicationManager(this);
     integrityManager = new IntegrityManager(this);
     server = new Server(this);
+    state = new State(this);
     window!: BrowserWindow;
     configuration!: ClientConfiguration;
-    secret!: string;
 
     errorHandler = (reason) => {
         if (reason instanceof Error) {
@@ -67,7 +68,7 @@ export default class Client {
             console.log(`Register: ${params.joinCode} ${params.name}`);
             this.server.start({url: params.url}).then(() => {
                 this.server.joinRoom(params.joinCode, params.name).then((data) => {
-                    this.secret = data.secret;
+                    this.state.setup();
                     this.configure(data.roomName, data.clientConfiguration);
                     this.loadDesktop();
                 }).catch(this.errorHandler);

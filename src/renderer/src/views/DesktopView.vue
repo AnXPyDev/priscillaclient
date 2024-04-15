@@ -62,6 +62,7 @@ function home() {
     bridge.send('Application-home');
 }
 
+//@ts-expect-error
 function quit() {
     bridge.send('Client-quit');
 }
@@ -109,15 +110,6 @@ function sendRequest() {
             </ToolBarButton>
             <ToolBarButton @click="rotateLayout()">
                 <i class="fa-solid fa-chart-tree-map"></i>
-            </ToolBarButton>
-            <ToolBarButton @click="rotateTheme()">
-                <i class="fa-solid fa-circle-half-stroke"></i>
-            </ToolBarButton>
-            <ToolBarButton @click="hide()">
-                H
-            </ToolBarButton>
-            <ToolBarButton @click="sendRequest()">
-                <i class="fa-solid fa-envelope"></i>
             </ToolBarButton>
             <div class="spacing"></div>
             <ToolBarButton v-for="app in app_names" @click="toggleApp(app)">

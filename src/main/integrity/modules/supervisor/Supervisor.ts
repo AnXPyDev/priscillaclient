@@ -19,20 +19,17 @@ abstract class Connection {
 }
 
 class HttpConnection extends Connection {
-    connection: Axios;
-    secret: string;
+    server: Server;
 
-    constructor(connection: Axios, secret: string) {
+    constructor(server: Server) {
         super();
-        this.connection = connection;
-        this.secret = secret;
+        this.server = server;
     }
 
     async connect() {}
     async disconnect() {}
     async push(event: IntegrityEvent) {
-        await this.connection.post("/client/supervisor/pushevent", {
-            "secret": this.secret,
+        await this.server.post("/client/supervisor/pushevent", {
             "data": event
         });
     }
@@ -49,6 +46,7 @@ class LogConnection extends Connection {
 export default class Supervisor extends IntegrityModule {
     socket?: Socket;
     connection!: Connection;
+    minimum_severity: number = -255;
 
     getName(): string {
         return "Supervisor";
@@ -76,6 +74,9 @@ export default class Supervisor extends IntegrityModule {
         this.connection.connect();
 
         this.manager.emitter.on("IE", (event: IntegrityEvent) => {
+            if (event.severity < this.minimum_severity) {
+                return;
+            }
             this.connection.push(event);
         });
     }
@@ -84,15 +85,17 @@ export default class Supervisor extends IntegrityModule {
        this.connection.disconnect();
     }
 
-    configure(options?: object): void {
+    configure(options: object = {}): void {
         const client = this.manager.client;
         const server = this.manager.client?.server;
         const protocol: string = options?.['protocol'] ?? server?.features['supervisor']?.['protocol'] ?? "log";
 
         if (protocol == 'http') {
-            this.connection = new HttpConnection(server.connection, client.secret);
+            this.connection = new HttpConnection(server);
         } else if (protocol == 'log') {
             this.connection = new LogConnection();
         }
+
+        this.minimum_severity = options['minimum_severity'] ?? this.minimum_severity;
     }
 }

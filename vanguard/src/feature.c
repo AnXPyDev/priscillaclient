@@ -5,7 +5,9 @@ typedef struct {
 } Feature;
 
 #include "features/GetForegroundWindow.c"
+#include "features/SetHandle.c"
 
 const Feature *features[FEATURE__END] = {
+    &FSetHandle,
     &FGetForegroundWindow
 };

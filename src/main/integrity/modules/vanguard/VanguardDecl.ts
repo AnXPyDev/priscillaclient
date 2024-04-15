@@ -3,11 +3,13 @@ export const MAX_JOBS = 256;
 export enum RequestCode {
     REQUEST_JOB_START = 0,
     REQUEST_JOB_STOP,
+    REQUEST_COMMAND,
     REQUEST_SERVICE_STOP
 };
 
 export enum FeatureCode {
-    FEATURE_GET_FOREGROUND_WINDOW = 0
+    FEATURE_SET_HANDLE = 0,
+    FEATURE_GET_FOREGROUND_WINDOW
 }
 
 export enum MessageCode {
@@ -65,6 +67,30 @@ export class VanguardRequestJobStart extends VanguardRequest {
 
         header.writeUint32LE(this.payload.length, 12);
         return Buffer.concat([header, this.payload])
+    }
+}
+
+export class VanguardRequestCommand extends VanguardRequest {
+    feature_code: FeatureCode;
+    payload?: Buffer;
+
+    constructor(feature_code: FeatureCode, payload?: Buffer) {
+        super(RequestCode.REQUEST_COMMAND);
+        this.feature_code = feature_code;
+        this.payload = payload;
+    }
+
+    override detailsToBuffer(): Buffer {
+        const header = Buffer.alloc(4 + 4);
+
+        header.writeInt32LE(this.feature_code, 0);
+        if (!this.payload) {
+            header.writeUint32LE(0, 4);
+            return header;
+        }
+
+        header.writeUint32LE(this.payload.length, 4);
+        return Buffer.concat([header, this.payload]);
     }
 }
 
