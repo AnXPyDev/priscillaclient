@@ -3,25 +3,19 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import Bridge from '@/main/Bridge'
-import { WebProfileConfiguration, WebProfileManager } from './web/WebProfile'
-import IntegrityManager, { IntegrityConfiguration } from './integrity/IntegrityManager'
-import { ApplicationConfiguration } from './web/Application'
+import { WebProfileManager } from './web/WebProfile'
+import IntegrityManager from './integrity/IntegrityManager'
 import ApplicationManager from './ApplicationManager'
 import { DesktopConfiguration, RegisterParams } from '@/shared/types'
-import axios from 'axios';
-
-export interface ClientConfiguration {
-    name: string,
-    integrity?: IntegrityConfiguration;
-    webprofiles?: WebProfileConfiguration[];
-    applications?: ApplicationConfiguration[];
-};
 
 import TestProfile from "@/main/profiles/priscillatest.json";
 import Server from './Server'
 import State from './State'
+import ClientConfiguration from './ClientConfiguration'
+import { EventEmitter } from 'stream'
 
 export default class Client {
+    emitter: EventEmitter = new EventEmitter();
     bridge = new Bridge(this);
     webProfileManager = new WebProfileManager(this);
     appManager =  new ApplicationManager(this);
@@ -71,7 +65,6 @@ export default class Client {
                     this.state.setup();
                     this.configure(data.roomName, data.clientConfiguration);
                     this.loadDesktop();
-                    this.kiosk(true);
                 }).catch(this.errorHandler);
             }).catch(this.errorHandler);
         });
@@ -126,6 +119,8 @@ export default class Client {
     configure(roomName: string, options: ClientConfiguration) {
         this.configuration = options;
         this.window.title = roomName;
+
+        this.integrityManager.addModule(this.state);
 
         if (options.integrity) {
             this.integrityManager.configure(options.integrity);

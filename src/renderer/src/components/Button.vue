@@ -16,7 +16,7 @@ const active_class = computed<string>(() => {
 </script>
 
 <template>
-    <div class="component_ToolBarButton ToolBarButton" :class="active_class">
+    <div class="component_Button Button" :class="active_class">
         <slot></slot>
     </div>
 </template>
@@ -24,7 +24,7 @@ const active_class = computed<string>(() => {
 <style lang="scss" scoped>
 @use "@/styles/lib/dimens";
 
-.ToolBarButton {
+.Button {
     border-radius: dimens.$radius;
     padding: dimens.$padding-small;
     background-color: var(--clr-bg-1);
@@ -51,7 +51,7 @@ const active_class = computed<string>(() => {
 </style>
 
 <style lang="scss">
-.component_ToolBarButton {
+.component_Button {
     img {
         object-fit: contain;
         max-width: 100%;

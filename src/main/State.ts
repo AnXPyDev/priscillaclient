@@ -1,7 +1,14 @@
+import { DesktopConfiguration } from "@/shared/types";
 import Client from "./Client";
 import Server from "./Server";
+import IntegrityModule from "./integrity/IntegrityModule";
+import { Severity } from "./integrity/IntegrityEvent";
 
-export default class State {
+export default class State extends IntegrityModule {
+    getName(): string { return "ClientState"; }
+    start(): void {}
+    stop(): void {}
+
     client: Client;
 
     state: {
@@ -11,6 +18,7 @@ export default class State {
     };
 
     constructor(client: Client) {
+        super();
         this.client = client;
     }
 
@@ -35,10 +43,16 @@ export default class State {
 
             if (action == "unlock") {
                 this.unlock();
+                this.submitEvent(Severity.SPECIAL_INFO, "Unlocked session", {
+                    reason: "Message received"
+                });
             }
 
             if (action == "lock") {
                 this.lock();
+                this.submitEvent(Severity.SPECIAL_INFO, "Locked session", {
+                    reason: "Message received"
+                });
             }
         })
     }

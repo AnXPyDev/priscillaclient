@@ -6,6 +6,7 @@ interface State {
     lockdown_mode: boolean
     current_route: string
     connected: boolean
+    error?: string
 }
 
 export const useState = defineStore('status', {
@@ -14,6 +15,7 @@ export const useState = defineStore('status', {
         desktop_obstructed: 0,
         lockdown_mode: false,
         current_route: "entry",
-        connected: false
+        connected: false,
+        error: undefined
     })
 });

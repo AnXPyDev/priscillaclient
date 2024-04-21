@@ -1,3 +1,19 @@
 {
-    "lang_name": "Slovencina"
+    "lang_name": "Slovenčina",
+    "lockdown_message": "Prosím počkajte na vyučujúceho, aby vám odomkol reláciu",
+    "entry_title": "Pripojte sa do miestnosti",
+    "entry_join_code_label": "Prihlasovací kód",
+    "entry_join_code_prompt": "Zadajte prihlasovací kód poskytnutý vyučujúcim",
+    "entry_url_label": "URL Serveru",
+    "entry_url_prompt": "Zadajte URL serveru poskytnutú vyučujúcim",
+    "entry_name_label": "Celé Meno",
+    "entry_name_promp": "Zadajte svoje meno a priezvisko",
+    "entry_button_connect_label": "Pripojiť sa",
+    "settings_title": "Nastavenia",
+    "settings_language_label": "Jazyk",
+    "settings_language_prompt": "Vyberte si preferovaný jazyk",
+    "settings_theme_label": "Téma",
+    "settings_theme_prompt": "Vyberte si tému",
+    "theme_dark_name": "Tmavá",
+    "theme_light_name": "Svetlá"
 }

@@ -3,17 +3,13 @@ import { ChildProcess, spawn } from "child_process";
 
 import VanguardFeature, { VanguardFeatureFactory } from "./VanguardFeature";
 import { FeatureCode, MessageCode, VanguardMessage, VanguardRequest, VanguardRequestCommand } from "./VanguardDecl";
-import { ForegroundWindowFactory } from "./features/ForegroundWindow";
 
-const availableFeatures: {
-    [name: string]: VanguardFeatureFactory
-} = {
-    "foreground_window": new ForegroundWindowFactory()
-}
+import availableFeatures from "./availableFeatures";
+
 
 export interface VanguardConfiguration {
     features?: {
-        [name: string]: object | boolean;
+        [name: string]: object;
     }
 }
 
@@ -108,16 +104,9 @@ export default class Vanguard extends IntegrityModule {
 
 
             const conf = options.features[name]; 
-            if (conf === false) {
-                continue;
-            }
 
             const feature = factory.create();
-
-            if (typeof conf === "object") {
-                feature.configure(conf as object);
-            }
-
+            feature.configure(conf);
             this.addFeature(feature);
         }
     }

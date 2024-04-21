@@ -30,6 +30,7 @@ void handle_start_job(FILE *in, MessageOutputStream *out) {
     Size id;
     fread(&id, sizeof(Size), 1, in);
     jobs[id] = Job_read(in, out);
+    fprintf(stderr, "Starting job %u", id); fflush(stderr);
     Job_launch(&jobs[id]);
 }
 

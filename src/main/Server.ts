@@ -1,7 +1,8 @@
 import axios, { Axios } from "axios";
-import Client, { ClientConfiguration } from "./Client";
+import Client from "./Client";
 import Mailbox from "./Mailbox";
 import RefreshMailbox from "./RefreshMailbox";
+import ClientConfiguration from "./ClientConfiguration";
 
 export interface ServerConfiguration {
     url: string
@@ -29,6 +30,10 @@ export default class Server {
     }
 
     async post(url: string, data: object = {}) {
+        if (!this.connection) {
+            return {code: 666};
+        }
+
         const res = await this.connection.post(url, {secret: this.secret, ...data});
         if (res.data.code != 0) {
             throw new Error(res.data.message);

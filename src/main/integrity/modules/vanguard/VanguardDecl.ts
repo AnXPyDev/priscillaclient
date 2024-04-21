@@ -9,11 +9,13 @@ export enum RequestCode {
 
 export enum FeatureCode {
     FEATURE_SET_HANDLE = 0,
-    FEATURE_GET_FOREGROUND_WINDOW
+    FEATURE_WATCH_FOREGROUND_WINDOW
 }
 
 export enum MessageCode {
-    MESSAGE_GET_FOREGROUND_WINDOW = 0
+    MESSAGE_WRONG_FOREGROUND_WINDOW = 0,
+    MESSAGE_CLIENT_FOREGROUND_WINDOW,
+    MESSAGE_CHILD_FOREGROUND_WINDOW
 }
 
 export class VanguardRequest {

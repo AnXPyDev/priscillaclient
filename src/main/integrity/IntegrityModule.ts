@@ -17,8 +17,8 @@ export default abstract class IntegrityModule {
         this.manager = manager;
     }
 
-    submitEvent(severity: Severity, message: string) {
-        this.manager.submitEvent(new IntegrityEvent(this.getName(), new Date(Date.now()), severity, message));
+    submitEvent(severity: Severity, message: string, data: object = {}) {
+        this.manager.submitEvent(IntegrityEvent.create(this.getName(), severity, message, data));
     }
 
     configure(options?: object): void {}

@@ -18,5 +18,7 @@ void Command_read_and_run(FILE *file, MessageOutputStream *stream) {
 
     quit:;
 
-    feature->function(stream, payload);
+    void *payload2 = feature->init(stream, payload);
+    feature->body(stream, payload2);
+    feature->cleanup(stream, payload2);
 }

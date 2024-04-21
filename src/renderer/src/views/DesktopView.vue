@@ -4,10 +4,8 @@ import ToolBar from '@/components/ToolBar.vue';
 import Desktop, { DesktopApp, DesktopLayout, DesktopLayouts } from '@/components/Desktop.vue';
 import { ref } from 'vue';
 import { bridge } from '@/lib/Bridge';
-import ToolBarButton from '@/components/ToolBarButton.vue';
-import { rotateTheme } from '@/lib/theme';
+import Button from '@/components/Button.vue';
 import { useConfiguration } from '@/stores/configuration';
-import { useState } from '@/stores/state';
 
 const conf = useConfiguration();
 
@@ -80,41 +78,27 @@ function rotateLayout() {
     layout.value = DesktopLayouts[layout_index];
 }
 
-const state = useState();
-
-function hide() {
-    if (state.desktop_obstructed > 0) {
-        state.desktop_obstructed = 0;
-        return;
-    }
-    state.desktop_obstructed = 1;
-}
-
-function sendRequest() {
-    bridge.send("Client-sendRequest");
-}
-
 </script>
 
 <template>
     <div class="DesktopView">
         <ToolBar class="ToolBar">
-            <ToolBarButton @click="home()">
+            <Button @click="home()">
                 <i class="fa-solid fa-house"></i>
-            </ToolBarButton>
-            <ToolBarButton @click="back()">
+            </Button>
+            <Button @click="back()">
                 <i class="fa-solid fa-arrow-left"></i>
-            </ToolBarButton>
-            <ToolBarButton @click="forward()">
+            </Button>
+            <Button @click="forward()">
                 <i class="fa-solid fa-arrow-right"></i>
-            </ToolBarButton>
-            <ToolBarButton @click="rotateLayout()">
+            </Button>
+            <Button @click="rotateLayout()">
                 <i class="fa-solid fa-chart-tree-map"></i>
-            </ToolBarButton>
+            </Button>
             <div class="spacing"></div>
-            <ToolBarButton v-for="app in app_names" @click="toggleApp(app)">
+            <Button v-for="app in app_names" @click="toggleApp(app)">
                 {{ app.substring(0, 2).toUpperCase() }}
-            </ToolBarButton>
+            </Button>
         </ToolBar>        
         <Desktop class="Desktop" :apps="apps" :layout="layout"></Desktop>
     </div>

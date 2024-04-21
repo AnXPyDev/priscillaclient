@@ -13,17 +13,18 @@ const availableModules: {
 };
 
 export interface IntegrityConfiguration {
-    modules: { name: string, configuration?: object }[],
+    modules: { [name: string]: object },
 };
 
 export default class IntegrityManager {
     client: Client;
     modules: IntegrityModule[] = [];
-    eventLog: IntegrityEvent[] = [];
-    emitter: EventEmitter = new EventEmitter();
+    //eventLog: IntegrityEvent[] = [];
+    emitter: EventEmitter;
 
     constructor(client: Client) {
         this.client = client;
+        this.emitter = client.emitter;
     }
 
     addModule(module: IntegrityModule) {
@@ -33,7 +34,7 @@ export default class IntegrityManager {
     }
 
     submitEvent(event: IntegrityEvent) {
-        this.eventLog.push(event);
+        //this.eventLog.push(event);
         this.emitter.emit("IE", event);
         //console.log(event.toString());
     }
@@ -51,16 +52,19 @@ export default class IntegrityManager {
     }
 
     configure(options: IntegrityConfiguration) {
-        for (const module of options.modules) {
-            const factory = availableModules[module.name];
+
+        for (const module of Object.keys(options.modules)) {
+            const configuration = options.modules[module];
+            const factory = availableModules[module];
+
             if (!factory) {
-                console.error(`IntegrityManager: Module ${module.name} not found`);
+                console.error(`IntegrityManager: Module ${module} not found`);
                 continue;
             }
 
             const im = factory.create();
             this.addModule(im);
-            im.configure(module.configuration);
+            im.configure(configuration);
         }
     }
 };

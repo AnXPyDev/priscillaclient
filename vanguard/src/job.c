@@ -9,16 +9,21 @@ typedef struct {
 
 void *Job_entry(Job *this) {
     if (!this->delay) {
-        this->feature->function(this->stream, this->payload);
+        fprintf(stderr, "No delay provided for deffered job");
+        fflush(stderr);
         goto quit;
     }
 
     int c = 0;
 
+    void *payload2 = this->feature->init(this->stream, this->payload);
+
     while (RUNNING && this->running && !c) {
-        c = this->feature->function(this->stream, this->payload);
+        c = this->feature->body(this->stream, payload2);
         Sleep(this->delay);
     }
+
+    c = this->feature->cleanup(this->stream, payload2);
 
     quit:;
     return NULL;

@@ -1,10 +1,12 @@
-import { Languages } from "@/lib/language";
+import { Language } from "@/lib/language";
+import type { Theme } from "@/lib/theme";
 import { DesktopConfiguration } from "@shared/types";
 import { defineStore } from "pinia";
 
 interface State {
     desktopConfiguration: DesktopConfiguration;
-    language: Languages
+    language: Language
+    theme: Theme
 }
 
 export const useConfiguration = defineStore('configuration', {
@@ -12,6 +14,7 @@ export const useConfiguration = defineStore('configuration', {
         desktopConfiguration: {
             apps: []
         },
-        language: Languages.ENGLISH
+        language: Language.ENGLISH,
+        theme: "light"
     })
 });

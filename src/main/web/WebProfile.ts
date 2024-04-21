@@ -5,7 +5,6 @@ import Application from "../Client";
 import IntegrityEvent, { Severity } from "../integrity/IntegrityEvent";
 
 export interface WebProfileConfiguration {
-    name: string,
     whitelist?: string[],
     homepage?: string
 }
@@ -32,13 +31,13 @@ export class WebProfile {
         }
     }
 
-    static fromConfig(options: WebProfileConfiguration): WebProfile {
+    static fromConfig(name: string, options: WebProfileConfiguration): WebProfile {
         let filter: WebFilter;
         if (options.whitelist) {
             filter = new DomainWebFilter(options.whitelist.map((regex) => new RegExp(regex)));
         }
 
-        return new WebProfile(options.name, {
+        return new WebProfile(name, {
             filter: options.whitelist && new DomainWebFilter(
                 options.whitelist.map((regex) => new RegExp(regex))
             ),
@@ -99,9 +98,12 @@ export class WebProfileManager {
     }
 
 
-    configure(profiles: WebProfileConfiguration[]) {
-        for (const profile of profiles) {
-            this.add(WebProfile.fromConfig(profile));
+    configure(profiles: {
+        [name: string]: WebProfileConfiguration
+    }) {
+        for (const profile of Object.keys(profiles)) {
+            const configuration = profiles[profile];
+            this.add(WebProfile.fromConfig(profile, configuration));
         }
     }
 }

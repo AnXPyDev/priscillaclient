@@ -1,4 +1,19 @@
 {
     "lang_name": "English",
-    "lockdown_message": "Please wait for the teacher to unlock your session"
+    "lockdown_message": "Please wait for the teacher to unlock your session",
+    "entry_title": "Connect to a room",
+    "entry_join_code_label": "Join Code",
+    "entry_join_code_prompt": "Enter the join code provided by your supervisor",
+    "entry_url_label": "Server URL",
+    "entry_url_prompt": "Enter the server URL provided by your supervisor",
+    "entry_name_label": "Full Name",
+    "entry_name_promp": "Enter your first name and last name",
+    "entry_button_connect_label": "Connect",
+    "settings_title": "Settings",
+    "settings_language_label": "Language",
+    "settings_language_prompt": "Choose your preferred language",
+    "settings_theme_label": "Theme",
+    "settings_theme_prompt": "Choose your preferred theme",
+    "theme_light_name": "Light",
+    "theme_dark_name": "Dark"
 }

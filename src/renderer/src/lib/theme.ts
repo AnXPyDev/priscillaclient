@@ -1,14 +1,8 @@
 export const Themes = ["light", "dark"] as const;
 
-type Theme = typeof Themes[number];
+export type Theme = typeof Themes[number];
 
-let current_theme: Theme = Themes[0];
-
-export function currentTheme() {
-    return current_theme;
-}
-
-export function setTheme(theme: Theme = current_theme) {
+export function setTheme(theme: Theme) {
     const root = document.documentElement;
     const toRemove: string[] = [];
     root.classList.forEach((value) => {
@@ -19,10 +13,4 @@ export function setTheme(theme: Theme = current_theme) {
 
     root.classList.remove(...toRemove);
     root.classList.add("theme-" + theme);
-}
-
-export function rotateTheme() {
-    current_theme = Themes[((Themes.indexOf(current_theme) ?? -1) + 1) % Themes.length];
-    console.log(current_theme);
-    setTheme();
 }
