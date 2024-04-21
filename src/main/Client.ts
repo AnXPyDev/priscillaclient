@@ -71,6 +71,7 @@ export default class Client {
                     this.state.setup();
                     this.configure(data.roomName, data.clientConfiguration);
                     this.loadDesktop();
+                    this.kiosk(true);
                 }).catch(this.errorHandler);
             }).catch(this.errorHandler);
         });
@@ -142,12 +143,8 @@ export default class Client {
 
     }
 
-    kiosk() {
-        if (this.isKiosk) {
-            this.isKiosk = false;
-        } else {
-            this.isKiosk = true;
-        }
+    kiosk(is: boolean = !this.isKiosk) {
+        this.isKiosk = is;
 
         this.window.setKiosk(this.isKiosk);
         this.window.setAlwaysOnTop(this.isKiosk, "screen-saver");

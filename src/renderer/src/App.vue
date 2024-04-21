@@ -8,6 +8,7 @@ import { useState } from './stores/state';
 import router from './router';
 import ToolBarButton from './components/ToolBarButton.vue';
 import { bridge } from './lib/Bridge';
+import { rotateTheme } from './lib/theme';
 
 const state = useState();
 
@@ -30,6 +31,10 @@ function lockSession() {
     bridge.send("Client-testLock");
 }
 
+function quit() {
+    bridge.send("Client-quit");
+}
+
 </script>
 
 <template>
@@ -43,6 +48,12 @@ function lockSession() {
                 </ToolBarButton>
                 <ToolBarButton :active="state.current_route == 'lockdown'" @click="lockSession()">
                     <i class="fa-solid fa-lock-keyhole"></i>
+                </ToolBarButton>
+                <ToolBarButton @click="quit()">
+                    <i class="fa-solid fa-xmark"></i>
+                </ToolBarButton>
+                <ToolBarButton @click="rotateTheme()">
+                    <i class="fa-solid fa-circle-half-stroke"></i>
                 </ToolBarButton>
             </template>
             <span>{{ state.current_route }}</span>

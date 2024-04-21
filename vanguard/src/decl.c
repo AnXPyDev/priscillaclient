@@ -8,6 +8,7 @@ typedef enum {
 
 typedef enum {
     MESSAGE_GET_FOREGROUND_WINDOW = 0,
+    MESSAGE_WRONG_FOREGROUND_WINDOW,
     MESSAGE__END
 } MessageCode;
 
