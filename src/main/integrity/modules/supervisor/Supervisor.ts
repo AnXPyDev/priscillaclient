@@ -68,6 +68,9 @@ export default class Supervisor extends IntegrityModule {
                 this.connection.push(event);
             }
             if (event.severity >= this.minimum_lock_severity) {
+                if (this.manager.client.state.state.locked) {
+                    return;
+                }
                 this.manager.client.state.lock();
                 this.submitEvent(Severity.SPECIAL_INFO, "Client session locked", {
                     reason: "Previous event"

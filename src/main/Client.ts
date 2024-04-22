@@ -118,7 +118,11 @@ export default class Client {
 
     configure(roomName: string, options: ClientConfiguration) {
         this.configuration = options;
-        this.window.title = roomName;
+        this.window.title = `${roomName} - ${options.name}`;
+
+        if (options.kiosk) {
+            this.kiosk(true);
+        }
 
         this.integrityManager.addModule(this.state);
 

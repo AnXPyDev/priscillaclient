@@ -122,13 +122,11 @@ function connect() {
         $split_gap: calc($padding * 2);
 
         > .left {
-            min-width: 45%;
             align-items: end;
             padding-right: calc($split_gap / 2);
             color: rgba(var(--clr-fg), 0.5);
         }
         > .right {
-            width: 100%;
             align-items: start;
             padding-left: calc($split_gap / 2);
         }
