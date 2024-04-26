@@ -1,3 +1,16 @@
+
+
+{
+    "kiosk": false,
+    "integrity": {
+        "modules": {
+            "supervisor": {
+                "minimum_lock_severity": 255
+            }
+        }
+    }
+}
+
 {
     "name": "Priscilla Secure Test",
     "integrity": {
@@ -15,12 +28,23 @@
     },
     "webprofiles": {
         "priscilla": {
+            "sequences": {
+                "login": {
+                    "entry": "https://priscilla.fitped.eu/login",
+                    "exits": [
+                        { "triggers": [ "dashboard" ], "target": "" }
+                    ]
+                }
+            }
+
             "whitelist": [
                 ".*\\.fitped\\.eu",
                 "cdn\\..*",
                 "cdnjs\\..*",
                 "fonts\\..*"
             ],
+
+
             "homepage": "https://priscilla.fitped.eu"
         },
         "translator": {

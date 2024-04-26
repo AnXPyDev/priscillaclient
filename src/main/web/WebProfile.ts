@@ -1,15 +1,20 @@
-import { Session, app, session } from "electron";
+import { Session, session } from "electron";
 import WebFilter, { DomainWebFilter } from "./WebFilter";
-import { Sieve } from "./WebFilter";
-import Application from "../Client";
 import IntegrityEvent, { Severity } from "../integrity/IntegrityEvent";
+import WebProfileManager from "./WebProfileManager";
 
-export interface WebProfileConfiguration {
+interface WebProfileConfiguration {
     whitelist?: string[],
     homepage?: string
 }
 
-export class WebProfile {
+export class WebProfileFactory {
+    create(name: string, configuration: object): WebProfile {
+        return WebProfile.fromConfig(name, configuration);
+    }
+}
+
+export default class WebProfile {
     name: string;
     filters: WebFilter[];
     log: boolean;
@@ -56,54 +61,32 @@ export class WebProfile {
             }
         }
 
-        const integrityManager = this.manager.application.integrityManager;
+        const integrityManager = this.manager.client.integrityManager;
         integrityManager.submitEvent(new IntegrityEvent("WebProfile", new Date(Date.now()), Severity.INFO, `${this.name} BLOCKED ${url}`));
 
         return false;
     }
 
+    canNavigateURL(url: string): boolean {
+        return this.isAllowedURL(url);
+    }
+
+    onNavigate(url: string) {}
+    onRequest(url: string) {}
+
+    getHomepage(): string {
+        return this.homepage;
+    }
+
     getSession(): Session {
         const sess = session.fromPartition(Math.random().toString(), { cache: false });
-        sess.webRequest.onBeforeRequest((details, callback) => callback({ cancel: !this.isAllowedURL(details.url)}));
+        sess.webRequest.onBeforeRequest((details, callback) => {
+            const allowed = this.isAllowedURL(details.url);
+            callback({ cancel: !allowed })
+            if (allowed) {
+                this.onRequest(details.url);
+            }
+        });
         return sess;
-    }
-}
-
-export class WebProfileManager {
-    application: Application;
-    profiles = new Map<string, WebProfile>();
-    defaultProfile = new WebProfile("defaultProfile", { filter: new Sieve() });
-
-    constructor(application: Application) {
-        this.application = application;
-    }
-
-    get(name: string): WebProfile {
-        let profile = this.profiles.get(name);
-        if (!profile) {
-            console.warn(`WebProfile ${name} not found, using default`);
-            profile = this.defaultProfile;
-        }
-        return profile;
-    }
-
-
-    add(profile: WebProfile) {
-        if (this.profiles.has(profile.name)) {
-            console.warn(`WebProfile ${profile.name} already registered`);
-            return;
-        }
-        this.profiles.set(profile.name, profile);
-        profile.attach(this);
-    }
-
-
-    configure(profiles: {
-        [name: string]: WebProfileConfiguration
-    }) {
-        for (const profile of Object.keys(profiles)) {
-            const configuration = profiles[profile];
-            this.add(WebProfile.fromConfig(profile, configuration));
-        }
     }
 }

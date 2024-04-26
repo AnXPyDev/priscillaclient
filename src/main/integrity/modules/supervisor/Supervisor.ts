@@ -47,6 +47,7 @@ interface SupervisorConfiguration {
     protocol?: string
     minimum_severity?: number
     minimum_lock_severity?: number
+    minimum_warning_severity?: number
 }
 
 export default class Supervisor extends IntegrityModule {
@@ -54,6 +55,7 @@ export default class Supervisor extends IntegrityModule {
     connection!: Connection;
     minimum_severity: number = -255;
     minimum_lock_severity: number = Severity.BREACH;
+    minimum_warning_severity: number = Severity.WARNING;
 
     getName(): string {
         return "Supervisor";
@@ -64,7 +66,7 @@ export default class Supervisor extends IntegrityModule {
         this.connection.connect();
 
         this.manager.emitter.on("IE", (event: IntegrityEvent) => {
-            if (event.severity >= this.minimum_severity || event.severity == Severity.SPECIAL_INFO) {
+            if (event.severity >= this.minimum_severity || event.severity < 0) {
                 this.connection.push(event);
             }
             if (event.severity >= this.minimum_lock_severity) {
@@ -73,6 +75,12 @@ export default class Supervisor extends IntegrityModule {
                 }
                 this.manager.client.state.lock();
                 this.submitEvent(Severity.SPECIAL_INFO, "Client session locked", {
+                    reason: "Previous event"
+                });
+            }
+            if (event.severity >= this.minimum_warning_severity) {
+                this.manager.client.state.setWarning();
+                this.submitEvent(Severity.SPECIAL_INFO, "Warning set", {
                     reason: "Previous event"
                 });
             }
@@ -98,5 +106,6 @@ export default class Supervisor extends IntegrityModule {
 
         this.minimum_severity = options.minimum_severity ?? this.minimum_severity;
         this.minimum_lock_severity = options.minimum_lock_severity ?? this.minimum_lock_severity;
+        this.minimum_warning_severity = options.minimum_warning_severity ?? this.minimum_warning_severity;
     }
 }

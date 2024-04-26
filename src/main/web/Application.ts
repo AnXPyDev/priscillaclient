@@ -1,5 +1,5 @@
 import { BrowserView, BrowserWindow } from "electron";
-import { WebProfile } from "./WebProfile";
+import WebProfile from "./WebProfile";
 
 export interface ApplicationConfiguration {
     name: string,
@@ -24,16 +24,22 @@ export default class Application {
         });
 
         this.view.webContents.on('will-navigate', (event, url, isInPlace) => {
-            if (!this.profile.isAllowedURL(url)) {
+            if (!this.profile.canNavigateURL(url)) {
                 event.preventDefault();
+                return;
             }
+            this.profile.onNavigate(url);
         });
 
         this.view.webContents.on('login', (event) => {
             console.log(`login: ${this.view.webContents.getURL()}`);
         });
 
-        this.view.webContents.loadURL(this.profile.homepage);
+        this.loadURL(this.profile.getHomepage())
+    }
+
+    loadURL(url: string) {
+        this.view.webContents.loadURL(url);
     }
 
     destroy() {

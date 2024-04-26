@@ -13,8 +13,12 @@ export default class State extends IntegrityModule {
 
     state: {
         locked: boolean
+        warning: boolean
+        disconnected: boolean
     } = {
-        locked: false
+        locked: false,
+        warning: false,
+        disconnected: false
     };
 
     constructor(client: Client) {
@@ -34,6 +38,27 @@ export default class State extends IntegrityModule {
         this.commit();
     }
 
+    setWarning() {
+        this.state.warning = true;
+        this.commit();
+    }
+
+    clearWarning() {
+        this.state.warning = false;
+        this.commit();
+    }
+
+    async disconnect() {
+        this.state.disconnected = true;
+        await this.commit();
+    }
+
+    acknowledgeMessage(message: string) {
+        this.submitEvent(Severity.MESSAGE_RECEIVED, message, {
+            reason: "Message received"
+        });
+    }
+
     setup() {
         this.client.server.mailbox.handleMessage((data) => {
             const action = data['action'];
@@ -41,23 +66,24 @@ export default class State extends IntegrityModule {
                 return;
             }
 
+            if (action == "clear_warning") {
+                this.clearWarning();
+                this.acknowledgeMessage("Warning cleared");
+            }
+
             if (action == "unlock") {
                 this.unlock();
-                this.submitEvent(Severity.SPECIAL_INFO, "Unlocked session", {
-                    reason: "Message received"
-                });
+                this.acknowledgeMessage("Unlocked Session");
             }
 
             if (action == "lock") {
                 this.lock();
-                this.submitEvent(Severity.SPECIAL_INFO, "Locked session", {
-                    reason: "Message received"
-                });
+                this.acknowledgeMessage("Locked Session");
             }
         })
     }
 
     async commit() {
-        this.client.server.post("/client/pushstate", { state: JSON.stringify(this.state) });
+        await this.client.server.post("/client/pushstate", { state: JSON.stringify(this.state) });
     }
 }

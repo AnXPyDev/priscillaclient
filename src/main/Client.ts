@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import Bridge from '@/main/Bridge'
-import { WebProfileManager } from './web/WebProfile'
+import WebProfileManager from './web/WebProfileManager'
 import IntegrityManager from './integrity/IntegrityManager'
 import ApplicationManager from './ApplicationManager'
 import { DesktopConfiguration, RegisterParams } from '@/shared/types'
@@ -75,6 +75,15 @@ export default class Client {
         
         app.on('browser-window-created', (_, window) => {
             optimizer.watchWindowShortcuts(window)
+        });
+
+        app.on('before-quit', async (event) => {
+            if (!this.state.state.disconnected) {
+                event.preventDefault();
+                this.state.disconnect().then(() => {
+                    app.quit();
+                });
+            }
         });
     }
 
@@ -150,7 +159,7 @@ export default class Client {
         this.window.setFullScreenable(!this.isKiosk);
         this.window.setFullScreen(this.isKiosk);
         this.window.setMinimizable(!this.isKiosk);
-        this.window.setClosable(!this.isKiosk);
+        //this.window.setClosable(!this.isKiosk);
     }
 
     quit() {

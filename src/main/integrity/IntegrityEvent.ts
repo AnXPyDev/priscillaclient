@@ -1,7 +1,9 @@
 import IntegrityModule from "./IntegrityModule";
 
 export enum Severity {
-    SPECIAL_INFO = -1, INFO, WARNING, SEVERE, BREACH
+    MESSAGE_RECEIVED = -2,
+    SPECIAL_INFO = -1,
+    INFO, WARNING, SEVERE, BREACH
 };
 
 export default class IntegrityEvent {
