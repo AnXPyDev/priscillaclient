@@ -1,9 +1,6 @@
-import assert from "assert";
-import IntegrityEvent, { Severity } from "../../IntegrityEvent";
-import IntegrityModule, { IntegrityModuleFactory } from "../../IntegrityModule";
-import { Socket, io as connectSocket, io } from 'socket.io-client';
-import Server from "@/main/Server";
-import { Axios } from "axios";
+import IntegrityEvent, { Severity } from "@/integrity/IntegrityEvent";
+import IntegrityModule, { IntegrityModuleFactory } from "@/integrity/IntegrityModule";
+import Server from "@/remote/Server";
 
 
 export class SupervisorFactory extends IntegrityModuleFactory {
@@ -29,8 +26,8 @@ class HttpConnection extends Connection {
     async connect() {}
     async disconnect() {}
     async push(event: IntegrityEvent) {
-        await this.server.post("/client/supervisor/pushevent", {
-            "data": event
+        await this.server.post("/client/pushevent", {
+            "data": JSON.stringify(event)
         });
     }
 }
@@ -51,7 +48,6 @@ interface SupervisorConfiguration {
 }
 
 export default class Supervisor extends IntegrityModule {
-    socket?: Socket;
     connection!: Connection;
     minimum_severity: number = -255;
     minimum_lock_severity: number = Severity.BREACH;
@@ -79,6 +75,9 @@ export default class Supervisor extends IntegrityModule {
                 });
             }
             if (event.severity >= this.minimum_warning_severity) {
+                if (this.manager.client.state.state.warning) {
+                    return;
+                }
                 this.manager.client.state.setWarning();
                 this.submitEvent(Severity.SPECIAL_INFO, "Warning set", {
                     reason: "Previous event"

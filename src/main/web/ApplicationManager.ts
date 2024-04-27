@@ -1,6 +1,8 @@
-import { Rect } from "@/shared/types";
-import Client from "./Client";
-import Application, { ApplicationConfiguration } from "./web/Application";
+import { Rect } from "@shared/types";
+import Client from "@/Client";
+import Application, { ApplicationConfiguration } from "@/web/Application";
+import IntegrityModule from "@/integrity/IntegrityModule";
+import IntegrityEvent from "@/integrity/IntegrityEvent";
 
 export default class ApplicationManager {
     client: Client;
@@ -15,13 +17,17 @@ export default class ApplicationManager {
         this.client = client;
     }
 
+    submitEvent(event: IntegrityEvent) {
+        this.client.integrityManager.submitEvent(event);
+    }
+
     create(name: string, profile: string) {
         if (this.apps.has(name)) {
             console.warn(`Application ${name} already exists`);
             return 1;
         }
         const v = {
-            app: new Application(name, this.client.webProfileManager.get(profile)),
+            app: new Application(this, name, this.client.webProfileManager.get(profile)),
             attached: false
         };
 
@@ -61,7 +67,7 @@ export default class ApplicationManager {
             console.warn(`View ${id} already attached`);
             return 1;
         }
-        console.log(`attach ${id}`);
+        //console.log(`attach ${id}`);
         v.app.attach(this.client.window);
         v.attached = true;
         this.focused = v.app;
@@ -78,7 +84,7 @@ export default class ApplicationManager {
             console.warn(`App ${id} not attached`);
             return 1;
         }
-        console.log(`detach ${id}`);
+        //console.log(`detach ${id}`);
         v.app.detach(this.client.window);
         v.attached = false;
         this.focused = undefined;

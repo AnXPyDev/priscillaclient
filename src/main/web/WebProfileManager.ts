@@ -1,9 +1,10 @@
-import Client from "../Client";
+import Client from "@/Client";
 import { Sieve } from "./WebFilter";
 import WebProfile, { WebProfileFactory } from "./WebProfile";
 import { SequenceProfileFactory } from "./SequenceProfile";
+import { StandardProfile, StandardProfileFactory } from "./StandardProfile";
 
-const defaultFactory = new WebProfileFactory();
+const defaultFactory = new StandardProfileFactory();
 
 const factories: {
     [type: string]: WebProfileFactory
@@ -15,7 +16,9 @@ const factories: {
 export default class WebProfileManager {
     client: Client;
     profiles = new Map<string, WebProfile>();
-    defaultProfile = new WebProfile("defaultProfile", { filter: new Sieve() });
+    defaultProfile = new StandardProfile("default", {
+        homepage: "https://fpvai.ukf.sk",
+    });
 
     constructor(client: Client) {
         this.client = client;

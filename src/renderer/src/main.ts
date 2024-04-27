@@ -57,6 +57,10 @@ bridge.on('Client-showError', (message: string) => {
     state.error = message;
 });
 
+bridge.on('Client-enableDebug', () => {
+    state.debug = true;
+})
+
 router.afterEach((to) => {
     state.current_route = to.name?.toString()!!;
     console.log(state.current_route);

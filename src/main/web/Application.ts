@@ -1,5 +1,7 @@
-import { BrowserView, BrowserWindow } from "electron";
-import WebProfile from "./WebProfile";
+import { BrowserView, BrowserWindow, Session, session } from "electron";
+import WebProfile from "@/web/WebProfile";
+import ApplicationManager from "@/web/ApplicationManager";
+import IntegrityEvent, { Severity } from "@/integrity/IntegrityEvent";
 
 export interface ApplicationConfiguration {
     name: string,
@@ -7,35 +9,87 @@ export interface ApplicationConfiguration {
     start_open?: boolean
 };
 
+function makeSession(): Session {
+    return session.fromPartition(Math.random().toString(), { cache: false });
+}
+
 export default class Application {
+    manager: ApplicationManager;
     name: string;
     view: BrowserView;
     profile: WebProfile;
+    session: Session;
 
-    constructor(name: string, profile: WebProfile) {
+    constructor(manager: ApplicationManager, name: string, profile: WebProfile) {
+        this.manager = manager;
         this.name = name;
         this.profile = profile;
+
+        this.session = makeSession();
+
         this.view = new BrowserView({
             webPreferences: {
                 devTools: false,
                 sandbox: true,
-                session: this.profile.getSession(),
+                session: this.session
             }
         });
 
-        this.view.webContents.on('will-navigate', (event, url, isInPlace) => {
+        this.session.webRequest.onBeforeRequest((details, callback) => {
+            const allowed = this.profile.canRequestURL(details.url);
+            callback({ cancel: !allowed });
+            if (!allowed) {
+                this.submitEvent(Severity.INFO, "Blocked request", { url: details.url });
+                return;
+            }
+            this.profile.onRequest(details.url);
+        })
+
+        /*
+        this.view.webContents.on('did-navigate', (event, url) => {
+            console.log(`did-navigate ${url}`);
+        })
+        this.view.webContents.on('did-navigate-in-page', (event, url) => {
+            console.log(`did-navigate-in-page ${url}`);
+        })
+        this.view.webContents.on('did-start-navigation', (event, url) => {
+            console.log(`did-start-navigation ${url}`);
+        })
+        this.view.webContents.on('did-frame-navigate', (event, url) => {
+            console.log(`did-frame-navigate ${url}`);
+        })
+        this.view.webContents.on('will-redirect', (event, url) => {
+            console.log(`will-redirect ${url}`);
+        })
+        this.view.webContents.on('did-redirect-navigation', (event, url) => {
+            console.log(`did-redirect-navigation ${url}`);
+        })
+        */
+
+        this.view.webContents.on('will-frame-navigate', (details) => {
+            if (!this.profile.canNavigateURL(details.url)) {
+                details.preventDefault();
+                this.submitEvent(Severity.INFO, "Prevented navigation", { url: details.url });
+                return;
+            }
+            this.profile.onNavigate(details.url);
+        })
+
+        this.view.webContents.on('did-navigate-in-page', (event, url, isInPlace) => {
             if (!this.profile.canNavigateURL(url)) {
-                event.preventDefault();
+                this.loadURL(this.profile.getHomepage());
+                this.submitEvent(Severity.INFO, "Prevented SPA navigation", { url });
                 return;
             }
             this.profile.onNavigate(url);
         });
 
-        this.view.webContents.on('login', (event) => {
-            console.log(`login: ${this.view.webContents.getURL()}`);
-        });
+        this.profile.attachApplication(this);
+        this.home();
+    }
 
-        this.loadURL(this.profile.getHomepage())
+    submitEvent(severity: Severity, message: string, data?: object) {
+        this.manager.submitEvent(IntegrityEvent.create(`Application "${this.name}"`, severity, message, data));
     }
 
     loadURL(url: string) {
@@ -66,7 +120,7 @@ export default class Application {
     }
 
     home() {
-        this.view.webContents.loadURL(this.profile.homepage);
+        this.view.webContents.loadURL(this.profile.getHomepage());
     }
 
     onFocus(handler) {

@@ -1,5 +1,14 @@
 <script setup lang="ts">
+import Button from '@/components/Button.vue';
 import String from '@/components/String.vue';
+import { bridge } from '@/lib/Bridge';
+import { useState } from '@/stores/state';
+const state = useState();
+
+function unlock() {
+    bridge.send('Debug-unlock');
+}
+
 </script>
 
 <template>
@@ -8,6 +17,9 @@ import String from '@/components/String.vue';
         <span class="message">
             <String name="lockdown_message"/>
         </span>
+        <Button v-if="state.debug" @click="unlock()">
+            <i class="fa-solid fa-lock-open"></i>
+        </Button>
     </div>
 </template>
 

@@ -1,4 +1,4 @@
-import IntegrityModule, { IntegrityModuleFactory } from "@/main/integrity/IntegrityModule";
+import IntegrityModule, { IntegrityModuleFactory } from "@/integrity/IntegrityModule";
 import { ChildProcess, spawn } from "child_process";
 
 import VanguardFeature, { VanguardFeatureFactory } from "./VanguardFeature";

@@ -1,4 +1,4 @@
-import { Severity } from "@/main/integrity/IntegrityEvent";
+import { Severity } from "@/integrity/IntegrityEvent";
 import VanguardFeature, { VanguardFeatureFactory } from "../VanguardFeature";
 import { FeatureCode, MessageCode, VanguardMessage, VanguardRequestJobStart } from "../VanguardDecl";
 
@@ -26,7 +26,8 @@ export default class WatchForegroundWindow extends VanguardFeature {
     handleWrong(message: Buffer) {
         const handle: Buffer = message.subarray(undefined, 8);
         const title: Buffer = message.subarray(8);
-        this.vanguard.submitEvent(Severity.BREACH, `Wrong window in foreground`, {
+        const state = this.vanguard.manager.client.state.state;
+        this.vanguard.submitEvent(state.locked ? Severity.WARNING : Severity.BREACH, `Wrong window in foreground`, {
             handle: handle.toString("hex"),
             title: title.toString("utf-8")
         });

@@ -1,6 +1,6 @@
-import { DesktopConfiguration } from "@/shared/types";
+import { DesktopConfiguration } from "@shared/types";
 import Client from "./Client";
-import Server from "./Server";
+import Server from "./remote/Server";
 import IntegrityModule from "./integrity/IntegrityModule";
 import { Severity } from "./integrity/IntegrityEvent";
 
@@ -15,10 +15,12 @@ export default class State extends IntegrityModule {
         locked: boolean
         warning: boolean
         disconnected: boolean
+        debug: boolean
     } = {
         locked: false,
         warning: false,
-        disconnected: false
+        disconnected: false,
+        debug: false
     };
 
     constructor(client: Client) {
@@ -45,6 +47,12 @@ export default class State extends IntegrityModule {
 
     clearWarning() {
         this.state.warning = false;
+        this.commit();
+    }
+
+    enableDebug() {
+        this.state.debug = true;
+        this.client.bridge.send('Client-enableDebug');
         this.commit();
     }
 

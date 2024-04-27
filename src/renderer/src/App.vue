@@ -27,11 +27,15 @@ function toggleSettings() {
 }
 
 function lockSession() {
-    bridge.send("Client-testLock");
+    bridge.send("Debug-lock");
+}
+
+function toggleKiosk() {
+    bridge.send("Debug-kiosk");
 }
 
 function quit() {
-    bridge.send("Client-quit");
+    bridge.send("Debug-quit");
 }
 
 </script>
@@ -45,16 +49,24 @@ function quit() {
                 <Button :active="state.current_route == 'settings'" @click="toggleSettings()">
                     <i class="fa-solid fa-gear"></i>
                 </Button>
-                <Button :active="state.current_route == 'lockdown'" @click="lockSession()">
-                    <i class="fa-solid fa-lock-keyhole"></i>
-                </Button>
-                <Button @click="quit()">
-                    <i class="fa-solid fa-xmark"></i>
-                </Button>
+                <template v-if="state.debug">
+                    <Button v-if="state.debug" @click="lockSession()">
+                        <i class="fa-solid fa-lock-keyhole"></i>
+                    </Button>
+                    <Button v-if="state.debug" @click="toggleKiosk()">
+                        <i class="fa-solid fa-maximize"></i>
+                    </Button>
+                    <Button v-if="state.debug" @click="quit()">
+                        <i class="fa-solid fa-xmark"></i>
+                    </Button>
+                    <span>{{ state.current_route }}</span>
+                    <String name="lang_name"/>
+                </template>
             </template>
-            <span>{{ state.current_route }}</span>
-            <String name="lang_name"/>
-            <span class="error" v-if="state.error">{{ state.error }}</span>
+            <span class="error" v-if="state.error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ state.error }}
+            </span>
         </ToolBar>
     </div>
 </template>

@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import type { Rect } from '@shared/types';
-import Client from '@/main/Client';
+import Client from '@/Client';
 
 
 export default class Bridge {

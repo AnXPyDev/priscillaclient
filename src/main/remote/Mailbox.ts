@@ -4,7 +4,6 @@ export interface Message {
 }
 
 export default abstract class Mailbox {
-    abstract send(data: any): Promise<any>;
     abstract start(): void;
     abstract handleMessage(handler: (data: object) => void);
 }

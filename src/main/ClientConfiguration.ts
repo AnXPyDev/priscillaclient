@@ -1,13 +1,13 @@
-import { IntegrityConfiguration } from "./integrity/IntegrityManager";
-import { ApplicationConfiguration } from "./web/Application";
-import { WebProfileConfiguration } from "./web/WebProfile";
+import { IntegrityConfiguration } from "@/integrity/IntegrityManager";
+import { ApplicationConfiguration } from "@/web/Application";
 
 export default interface ClientConfiguration {
     name: string
+    debug?: boolean
     kiosk?: boolean
     integrity?: IntegrityConfiguration
     webprofiles?: {
-        [name: string]: WebProfileConfiguration
+        [name: string]: object
     }
     applications?: ApplicationConfiguration[]
 };

@@ -2,17 +2,18 @@ import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import Bridge from '@/main/Bridge'
+import Bridge from '@/Bridge'
 import WebProfileManager from './web/WebProfileManager'
 import IntegrityManager from './integrity/IntegrityManager'
-import ApplicationManager from './ApplicationManager'
-import { DesktopConfiguration, RegisterParams } from '@/shared/types'
+import ApplicationManager from './web/ApplicationManager'
+import { DesktopConfiguration, RegisterParams } from '@shared/types'
 
-import TestProfile from "@/main/profiles/priscillatest.json";
-import Server from './Server'
-import State from './State'
-import ClientConfiguration from './ClientConfiguration'
+import TestProfile from "@/profiles/devtest.json";
+import Server from '@/remote/Server'
+import State from '@/State'
+import ClientConfiguration from '@/ClientConfiguration'
 import { EventEmitter } from 'stream'
+import IntegrityEvent, { Severity } from './integrity/IntegrityEvent'
 
 export default class Client {
     emitter: EventEmitter = new EventEmitter();
@@ -77,7 +78,7 @@ export default class Client {
             optimizer.watchWindowShortcuts(window)
         });
 
-        app.on('before-quit', async (event) => {
+        app.on('before-quit', (event) => {
             if (!this.state.state.disconnected) {
                 event.preventDefault();
                 this.state.disconnect().then(() => {
@@ -124,6 +125,29 @@ export default class Client {
             this.window.loadFile(join(__dirname, '../renderer/index.html'))
         }
     }
+    
+    setupDebug() {
+        this.bridge.on('Debug-unlock', () => {
+            this.integrityManager.submitEvent(IntegrityEvent.create("Client-DEBUG", Severity.DEBUG_ACTION, "Unlocked Session"));
+            this.state.unlock();
+        });
+
+        this.bridge.on('Debug-lock', () => {
+            this.integrityManager.submitEvent(IntegrityEvent.create("Client-DEBUG", Severity.DEBUG_ACTION, "Locked Session"));
+            this.state.lock();
+        });
+
+        this.bridge.on('Debug-kiosk', () => {
+            this.integrityManager.submitEvent(IntegrityEvent.create("Client-DEBUG", Severity.DEBUG_ACTION, "Toggle Kiosk"));
+            this.kiosk();
+        });
+
+        this.bridge.on('Debug-quit', () => {
+            this.integrityManager.submitEvent(IntegrityEvent.create("Client-DEBUG", Severity.DEBUG_ACTION, "Quit"));
+            this.quit();
+        });
+    }
+
 
     configure(roomName: string, options: ClientConfiguration) {
         this.configuration = options;
@@ -134,6 +158,11 @@ export default class Client {
         }
 
         this.integrityManager.addModule(this.state);
+
+        if (options.debug) {
+            this.state.enableDebug();
+            this.setupDebug();
+        }
 
         if (options.integrity) {
             this.integrityManager.configure(options.integrity);

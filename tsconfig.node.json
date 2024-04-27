@@ -7,10 +7,13 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [
-        "src/*"
+        "src/main/*"
       ],
       "@shared/*": [
         "src/shared/*"
+      ],
+      "@root/*": [
+        "src/*"
       ]
     }
   }

@@ -1,8 +1,8 @@
 import axios, { Axios } from "axios";
-import Client from "./Client";
+import Client from "@/Client";
 import Mailbox from "./Mailbox";
 import RefreshMailbox from "./RefreshMailbox";
-import ClientConfiguration from "./ClientConfiguration";
+import ClientConfiguration from "@/ClientConfiguration";
 
 export interface ServerConfiguration {
     url: string
@@ -12,7 +12,7 @@ export interface ServerFeatures {
     supervisor: {
         protocol: "http" | "socket"
     }
-    requests: {
+    messages: {
         protocol: "http-long-polling" | "http-refresh" | "socket"
     }
 };
@@ -54,17 +54,14 @@ export default class Server {
         this.features = await this.post("/info/features");
 
         this.setup();
+    }
 
+    setupSession() {
         this.mailbox.start();
     }
 
-    async testMessage() {
-        const res = await this.mailbox.send({data: {message: "hello world"}});
-        console.log(JSON.stringify(res));
-    }
-
     setup() {
-        const req_proto = this.features.requests.protocol;
+        const req_proto = this.features.messages.protocol;
         if (req_proto == "http-refresh") {
             this.mailbox = new RefreshMailbox(this);
         } else {
@@ -78,7 +75,11 @@ export default class Server {
     }> {
         const res = await this.post("/client/joinroom", { joinCode, name });
         this.secret = res.secret;
-        return res;
+        this.setupSession();
+        return {
+            clientConfiguration: JSON.parse(res.clientConfiguration),
+            roomName: res.roomName
+        }
     }
 
 };

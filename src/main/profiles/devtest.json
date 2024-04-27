@@ -1,0 +1,68 @@
+{
+    "name": "Priscilla Secure Test",
+    "debug": true,
+    "integrity": {
+        "modules": {
+            "vanguard": {
+                "features": {
+                    "watch_foreground_window": {}
+                }
+            },
+            "supervisor": {
+                "protocol": "log"
+            }
+        }
+    },
+    "webprofiles": {
+        "priscilla": {
+            "type": "sequence",
+            "stages": {
+                "login": {
+                    "entry": "https://priscilla.fitped.eu/login",
+                    "exits": [
+                        {
+                            "triggers": [ "https://priscilla.fitped.eu/dashboard" ],
+                            "target": "test",
+                            "message": "Logged in to priscilla"
+                        }
+                    ],
+                    "nav_whitelist": [
+                        "https://priscilla.fitped.eu/dashboard"
+                    ]
+                },
+                "test": {
+                    "entry": "https://priscilla.fitped.eu/chapter_content/54"
+                }
+            },
+            "begin": "login",
+            "whitelist": [
+                "https://.*\\.fitped\\.eu/",
+                "https://cdn\\..*/",
+                "https://cdnjs\\..*/",
+                "https://fonts\\..*/"
+            ],
+            "nav_whitelist": []
+        },
+        "translator": {
+            "homepage": "https://translate.google.com",
+            "whitelist": [
+                "https://.*gstatic\\.*"
+            ],
+            "nav_whitelist": [
+                "https://translate\\.google\\..*/",
+                "https://consent\\.google\\..*/"
+            ]
+        }
+    },
+    "applications": [
+        {
+            "name": "Priscilla",
+            "webprofile": "priscilla",
+            "start_open": true
+        },
+        {
+            "name": "Translator",
+            "webprofile": "translator"
+        }
+    ]
+}

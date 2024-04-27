@@ -88,19 +88,6 @@ export default class RefreshMailbox extends Mailbox {
         this.running = false;
     }
 
-    send(data: any): Promise<any> {
-        return new Promise<any>(async (resolve, reject) => {
-            let res;
-            try {
-                res = await this.server.post("/client/request", data);
-            } catch (e) {
-                return reject(e);
-            }
-
-            this.pending.set(res.request_id, { resolve, reject });
-        });
-    }
-
     handleMessage(handler: (data: object) => void) {
         this.messageHandlers.push(handler);
     }
