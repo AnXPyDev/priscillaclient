@@ -1,7 +1,7 @@
 import IntegrityModule, { IntegrityModuleFactory } from "@/integrity/IntegrityModule";
 import { ChildProcess, spawn } from "child_process";
 
-import VanguardFeature, { VanguardFeatureFactory } from "./VanguardFeature";
+import VanguardFeature from "./VanguardFeature";
 import { FeatureCode, MessageCode, VanguardMessage, VanguardRequest, VanguardRequestCommand } from "./VanguardDecl";
 
 import availableFeatures from "./availableFeatures";

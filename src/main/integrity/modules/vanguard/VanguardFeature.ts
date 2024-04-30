@@ -15,6 +15,7 @@ export default abstract class VanguardFeature {
     start() {}
     stop() {}
 
+    // @ts-expect-error
     configure(options?: object): void {};
 
     abstract codes(): MessageCode[];

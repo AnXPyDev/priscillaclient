@@ -1,5 +1,3 @@
-import IntegrityModule from "./IntegrityModule";
-
 export enum Severity {
     DEBUG_ACTION = -3,
     MESSAGE_RECEIVED = -2,

@@ -21,5 +21,6 @@ export default abstract class IntegrityModule {
         this.manager.submitEvent(IntegrityEvent.create(this.getName(), severity, message, data));
     }
 
+    // @ts-expect-error
     configure(options?: object): void {}
 };

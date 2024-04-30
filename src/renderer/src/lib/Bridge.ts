@@ -22,6 +22,7 @@ export default class Bridge {
     }
 
     on(signal: string, handler: (...args) => any) {
+        // @ts-expect-error
         window.electron.ipcRenderer.on(signal, (event, ...args) => {
             handler(...args);
         })

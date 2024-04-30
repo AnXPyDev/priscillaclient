@@ -26,6 +26,7 @@ const state = useState();
 
     let current_theme = configuration.theme;
 
+    // @ts-expect-error
     configuration.$subscribe((mutation, state) => {
         if (state.theme != current_theme) {
             setTheme(state.theme);
@@ -65,6 +66,8 @@ router.afterEach((to) => {
     state.current_route = to.name?.toString()!!;
     console.log(state.current_route);
 });
+
+router.push({ name: "home" });
 
 
 app.mount('#app');

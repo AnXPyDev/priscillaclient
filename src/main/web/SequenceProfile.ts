@@ -132,6 +132,7 @@ export default class SequenceProfile extends WebProfile {
         this.active_stage.onNavigate(url);
     }
 
+    // @ts-expect-error
     onRequest(url: string) {}
 
 }

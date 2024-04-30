@@ -1,5 +1,4 @@
 import Client from "@/Client";
-import { Sieve } from "./WebFilter";
 import WebProfile, { WebProfileFactory } from "./WebProfile";
 import { SequenceProfileFactory } from "./SequenceProfile";
 import { StandardProfile, StandardProfileFactory } from "./StandardProfile";

@@ -75,6 +75,7 @@ export default class Application {
             this.profile.onNavigate(details.url);
         })
 
+        // @ts-expect-error
         this.view.webContents.on('did-navigate-in-page', (event, url, isInPlace) => {
             if (!this.profile.canNavigateURL(url)) {
                 this.loadURL(this.profile.getHomepage());

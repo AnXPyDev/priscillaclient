@@ -1,6 +1,6 @@
 import EventEmitter from "events";
 import Client from "@/Client";
-import IntegrityEvent, { Severity } from "./IntegrityEvent";
+import IntegrityEvent from "./IntegrityEvent";
 import IntegrityModule, { IntegrityModuleFactory } from "./IntegrityModule";
 import { VanguardFactory } from "./modules/vanguard/Vanguard";
 import { SupervisorFactory } from "./modules/supervisor/Supervisor";

@@ -1,8 +1,5 @@
-import { Session, session } from "electron";
 import WebFilter, { MatchWebFilter, RegexWebFilter } from "./WebFilter";
 import WebProfile, { WebProfileFactory } from "./WebProfile";
-import WebProfileManager from "./WebProfileManager";
-import IntegrityEvent, { Severity } from "../integrity/IntegrityEvent";
 
 interface StandardProfileOptions {
     whitelist?: string[],
@@ -43,7 +40,9 @@ export class StandardProfile extends WebProfile {
         return this.canNavigateURL(url);
     }
 
+    // @ts-expect-error
     onNavigate(url: string) {}
+    // @ts-expect-error
     onRequest(url: string) {}
 
     getHomepage(): string {

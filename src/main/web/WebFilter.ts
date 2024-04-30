@@ -3,6 +3,7 @@ export default interface WebFilter {
 }
 
 export class Sieve implements WebFilter {
+    // @ts-expect-error
     isAllowedURL(url: string): boolean {
         return true;
     }

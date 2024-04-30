@@ -1,7 +1,6 @@
 import { Rect } from "@shared/types";
 import Client from "@/Client";
 import Application, { ApplicationConfiguration } from "@/web/Application";
-import IntegrityModule from "@/integrity/IntegrityModule";
 import IntegrityEvent from "@/integrity/IntegrityEvent";
 
 export default class ApplicationManager {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { Languages, getString } from '@/lib/language';
+import { Language, getString } from '@/lib/language';
 import { useConfiguration } from '@/stores/configuration';
 import { computed } from 'vue';
 

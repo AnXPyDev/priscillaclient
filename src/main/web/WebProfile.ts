@@ -1,6 +1,3 @@
-import { Session, session } from "electron";
-import WebFilter from "@/web/WebFilter";
-import IntegrityEvent, { Severity } from "@/integrity/IntegrityEvent";
 import WebProfileManager from "@/web/WebProfileManager";
 import Application from "@/web/Application";
 

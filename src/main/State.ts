@@ -1,6 +1,4 @@
-import { DesktopConfiguration } from "@shared/types";
 import Client from "./Client";
-import Server from "./remote/Server";
 import IntegrityModule from "./integrity/IntegrityModule";
 import { Severity } from "./integrity/IntegrityEvent";
 
@@ -58,7 +56,6 @@ export default class State extends IntegrityModule {
 
     async disconnect() {
         this.state.disconnected = true;
-        await this.commit();
     }
 
     acknowledgeMessage(message: string) {
