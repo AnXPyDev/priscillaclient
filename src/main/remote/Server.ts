@@ -3,10 +3,7 @@ import Client from "@/Client";
 import Mailbox from "./Mailbox";
 import RefreshMailbox from "./RefreshMailbox";
 import ClientConfiguration from "@/ClientConfiguration";
-
-export interface ServerConfiguration {
-    url: string
-};
+import { createConnection, ConnectionConfiguration, Connection } from "./Connection";
 
 export interface ServerFeatures {
     supervisor: {
@@ -19,8 +16,7 @@ export interface ServerFeatures {
 
 export default class Server {
     client: Client;
-    connection!: Axios;
-    url!: string;
+    connection!: Connection;
     features!: ServerFeatures;
     mailbox!: Mailbox;
     secret!: string;
@@ -42,14 +38,9 @@ export default class Server {
         return res.data;
     }
 
-    async start(config: ServerConfiguration): Promise<void> {
-        this.url = config.url;
+    async start(config: ConnectionConfiguration) {
 
-        console.log(this.url);
-
-        this.connection = axios.create({
-            baseURL: this.url,
-        });
+        this.connection = createConnection(config);
 
         this.features = await this.post("/info/features");
 
