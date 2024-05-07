@@ -45,6 +45,7 @@ interface SupervisorConfiguration {
     minimum_severity?: number
     minimum_lock_severity?: number
     minimum_warning_severity?: number
+    waitfor?: string
 }
 
 export default class Supervisor extends IntegrityModule {
@@ -52,20 +53,20 @@ export default class Supervisor extends IntegrityModule {
     minimum_severity: number = -255;
     minimum_lock_severity: number = Severity.BREACH;
     minimum_warning_severity: number = Severity.WARNING;
+    locking_active: boolean = true
 
     getName(): string {
         return "Supervisor";
     }
 
     start(): void {
-
         this.connection.connect();
 
         this.manager.emitter.on("IE", (event: IntegrityEvent) => {
             if (event.severity >= this.minimum_severity || event.severity < 0) {
                 this.connection.push(event);
             }
-            if (event.severity >= this.minimum_lock_severity) {
+            if (event.severity >= this.minimum_lock_severity && this.locking_active) {
                 if (this.manager.client.state.state.locked) {
                     return;
                 }
@@ -106,5 +107,12 @@ export default class Supervisor extends IntegrityModule {
         this.minimum_severity = options.minimum_severity ?? this.minimum_severity;
         this.minimum_lock_severity = options.minimum_lock_severity ?? this.minimum_lock_severity;
         this.minimum_warning_severity = options.minimum_warning_severity ?? this.minimum_warning_severity;
+
+        if (options.waitfor) {
+            this.locking_active = false
+            this.manager.emitter.addListener(options.waitfor, () => {
+                this.locking_active = true
+            });
+        }
     }
 }

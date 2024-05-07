@@ -49,7 +49,11 @@ export default class State extends IntegrityModule {
     }
 
     enableDebug() {
+        if (this.state.debug) {
+            return;
+        }
         this.state.debug = true;
+        this.client.setupDebug();
         this.client.bridge.send('Client-enableDebug');
         this.commit();
     }
@@ -63,6 +67,27 @@ export default class State extends IntegrityModule {
             reason: "Message received"
         });
     }
+    
+    handlers: {
+        [action: string]: () => void | undefined
+    } = {
+        "clear_warning": () => {
+            this.clearWarning();
+            this.acknowledgeMessage("Warning cleared");
+        },
+        "unlock": () => {
+            this.unlock();
+            this.acknowledgeMessage("Unlocked Session");
+        },
+        "lock": () => {
+            this.lock();
+            this.acknowledgeMessage("Locked Session");
+        },
+        "enable_debug": () => {
+            this.enableDebug()
+            this.acknowledgeMessage("Debug enabled");
+        }
+    };
 
     setup() {
         this.client.server.mailbox.handleMessage((data) => {
@@ -71,21 +96,13 @@ export default class State extends IntegrityModule {
                 return;
             }
 
-            if (action == "clear_warning") {
-                this.clearWarning();
-                this.acknowledgeMessage("Warning cleared");
+            const handler = this.handlers[action]
+            if (handler === undefined) {
+                return;
             }
 
-            if (action == "unlock") {
-                this.unlock();
-                this.acknowledgeMessage("Unlocked Session");
-            }
-
-            if (action == "lock") {
-                this.lock();
-                this.acknowledgeMessage("Locked Session");
-            }
-        })
+            handler();
+        });
     }
 
     async commit() {

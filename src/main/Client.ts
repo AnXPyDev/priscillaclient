@@ -154,14 +154,21 @@ export default class Client {
         this.window.title = `${roomName} - ${options.name}`;
 
         if (options.kiosk) {
-            this.kiosk(true);
+            if (typeof(options.kiosk) == 'boolean') {
+                this.kiosk(true);
+            } else if (typeof(options.kiosk) == 'object') {
+                if (options.kiosk.waitfor) {
+                    this.emitter.addListener(options.kiosk.waitfor, () => {
+                        this.kiosk(true)
+                    })
+                }
+            }
         }
 
         this.integrityManager.addModule(this.state);
 
         if (options.debug) {
             this.state.enableDebug();
-            this.setupDebug();
         }
 
         if (options.integrity) {

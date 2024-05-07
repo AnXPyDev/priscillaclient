@@ -14,6 +14,7 @@ interface StageOptions {
         triggers?: string[]
         target?: string
         message?: string
+        emit?: string
     }[]
     whitelist?: string[]
     nav_whitelist?: string[]
@@ -37,6 +38,7 @@ class Stage {
         triggers: RegExp[],
         target: string,
         message?: string
+        emit?: string
     }[];
 
     constructor(profile: SequenceProfile, options: StageOptions) {
@@ -47,7 +49,8 @@ class Stage {
         this.exits = options.exits?.map((options) => ({
             triggers: options.triggers!!.map((regex) => new RegExp(regex)) ?? [],
             target: options.target!!,
-            message: options.message
+            message: options.message,
+            emit: options.emit
         })) ?? []
     }
 
@@ -69,7 +72,7 @@ class Stage {
         for (const exit of this.exits) {
             for (const trigger of exit.triggers) {
                 if (trigger.test(url)) {
-                    this.profile.transitionStage(exit.target, exit.message);
+                    this.profile.transitionStage(exit.target, exit.message, exit.emit);
                 }
             }
         }
@@ -101,11 +104,14 @@ export default class SequenceProfile extends WebProfile {
         this.active_stage = this.stages[options.begin!!];
     }
 
-    transitionStage(target: string, message?: string) {
+    transitionStage(target: string, message?: string, emit?: string) {
         this.active_stage = this.stages[target]!!;
         this.application.loadURL(this.active_stage.entry)
         if (message) {
             this.application.submitEvent(Severity.SPECIAL_INFO, message);
+            if (emit) {
+                this.manager.client.emitter.emit(emit);
+            }
         }
     }
     
