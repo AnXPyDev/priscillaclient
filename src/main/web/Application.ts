@@ -45,26 +45,76 @@ export default class Application {
             this.profile.onRequest(details.url);
         })
 
+        const handleNavigation = (url: string, preventDefault: () => any, extras: object = {}, onNavigate: () => any = () => {}) => {
+            if (!this.profile.canNavigateURL(url)) {
+                preventDefault();
+                this.submitEvent(Severity.INFO, "Prevented navigation", { url, ...extras });
+                return;
+            }
+            onNavigate();
+        }
+
+        const webContents = this.view.webContents;
+
+        webContents.on('will-navigate', (event) => {
+            handleNavigation(event.url, () => event.preventDefault(), { event: 'will-navigate' });
+        });
+
+        webContents.on('will-frame-navigate', (event) => {
+            handleNavigation(event.url, () => event.preventDefault(), { event: 'will-frame-navigate' });
+        });
+
+        webContents.on('will-redirect', (event) => {
+            handleNavigation(event.url, () => event.preventDefault(), { event: 'will-redirect' });
+        });
+        
+        webContents.on('did-start-navigation', (event) => {
+            handleNavigation(event.url, () => event.preventDefault(), { event: 'did-start-navigation' });
+        });
+       
+        // @ts-expect-error
+        webContents.on('did-navigate-in-page', (event, url) => {
+            handleNavigation(url, () => {
+                this.loadURL(this.profile.getHomepage());
+            }, { event: 'did-navigate-in-page' }, () => {
+                this.profile.onNavigate(url);
+            });
+        });
+        
+        // @ts-expect-error
+        webContents.on('did-navigate', (event, url) => {
+            handleNavigation(url, () => {
+                this.loadURL(this.profile.getHomepage());
+            }, { event: 'did-navigate' }, () => {
+                this.profile.onNavigate(url);
+            });
+        });
+
         /*
-        this.view.webContents.on('did-navigate', (event, url) => {
-            console.log(`did-navigate ${url}`);
-        })
+        // @ts-expect-error
         this.view.webContents.on('did-navigate-in-page', (event, url) => {
-            console.log(`did-navigate-in-page ${url}`);
+            console.error(`did-navigate-in-page ${url}`);
         })
-        this.view.webContents.on('did-start-navigation', (event, url) => {
-            console.log(`did-start-navigation ${url}`);
-        })
+
+        // @ts-expect-error
         this.view.webContents.on('did-frame-navigate', (event, url) => {
-            console.log(`did-frame-navigate ${url}`);
+            console.error(`did-frame-navigate ${url}`);
         })
         this.view.webContents.on('will-redirect', (event, url) => {
-            console.log(`will-redirect ${url}`);
+            if (!this.profile.canNavigateURL(url)) {
+                event.preventDefault();
+                this.submitEvent(Severity.INFO, "Prevented redirect", { url });
+            }
         })
+        
+        // @ts-expect-error
         this.view.webContents.on('did-redirect-navigation', (event, url) => {
-            console.log(`did-redirect-navigation ${url}`);
+            console.error(`did-redirect-navigation ${url}`);
         })
-        */
+        
+        // @ts-expect-error
+        this.view.webContents.on('did-start-navigation', (event) => {
+        })
 
         this.view.webContents.on('will-frame-navigate', (details) => {
             if (!this.profile.canNavigateURL(details.url)) {
@@ -84,6 +134,23 @@ export default class Application {
             }
             this.profile.onNavigate(url);
         });
+        
+        // @ts-expect-error
+        this.view.webContents.on('did-navigate', (event, url) => {
+            if (!this.profile.canNavigateURL(url)) {
+                this.loadURL(this.profile.getHomepage());
+                this.submitEvent(Severity.INFO, "Prevented navigation", { url });
+                return;
+            }
+            this.profile.onNavigate(url);
+        })
+
+        this.view.webContents.on('will-navigate', (event) => {
+            handleNavigation(event.url, () => {
+                event.preventDefault();
+            });
+        });
+        */
 
         this.profile.attachApplication(this);
         this.home();

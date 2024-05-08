@@ -14,11 +14,14 @@ export default class State extends IntegrityModule {
         warning: boolean
         disconnected: boolean
         debug: boolean
+        done: boolean
     } = {
         locked: false,
         warning: false,
         disconnected: false,
-        debug: false
+        debug: false,
+        done: false
+
     };
 
     constructor(client: Client) {
@@ -42,6 +45,11 @@ export default class State extends IntegrityModule {
         this.state.warning = true;
         this.commit();
     }
+    
+    setDone() {
+        this.state.done = true;
+        this.commit();
+    }
 
     clearWarning() {
         this.state.warning = false;
@@ -60,6 +68,7 @@ export default class State extends IntegrityModule {
 
     async disconnect() {
         this.state.disconnected = true;
+        await this.commit();
     }
 
     acknowledgeMessage(message: string) {
@@ -90,6 +99,10 @@ export default class State extends IntegrityModule {
     };
 
     setup() {
+        this.client.emitter.on("State-done", () => {
+            this.setDone();
+        });
+
         this.client.server.mailbox.handleMessage((data) => {
             const action = data['action'];
             if (action === undefined) {

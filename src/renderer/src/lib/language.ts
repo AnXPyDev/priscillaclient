@@ -2,7 +2,12 @@ export enum Language {
     ENGLISH, SLOVAK, UKRAINIAN
 };
 
-export const Languages = Object.values(Language).filter(value => typeof(value) === "number").toSorted() as Language[];
+export const Languages = [
+    Language.ENGLISH,
+    Language.SLOVAK,
+    Language.UKRAINIAN
+];
+
 
 const translations = {
     [Language.SLOVAK]: await import('@/assets/translations/slovak.json'),

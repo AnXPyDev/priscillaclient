@@ -11,9 +11,10 @@ import { DesktopConfiguration, RegisterParams } from '@shared/types'
 import TestProfile from "@/profiles/devtest.json";
 import Server from '@/remote/Server'
 import State from '@/State'
-import ClientConfiguration from '@/ClientConfiguration'
+import { ClientConfiguration, LocalConfiguration } from '@/Configuration'
 import { EventEmitter } from 'stream'
 import IntegrityEvent, { Severity } from './integrity/IntegrityEvent'
+import { readFileSync } from 'fs'
 
 export default class Client {
     emitter: EventEmitter = new EventEmitter();
@@ -25,6 +26,7 @@ export default class Client {
     state = new State(this);
     window!: BrowserWindow;
     configuration!: ClientConfiguration;
+    localconfig: LocalConfiguration = {};
 
     errorHandler = (reason) => {
         if (reason instanceof Error) {
@@ -37,7 +39,13 @@ export default class Client {
     isKiosk = false;
 
     constructor() {
+        try {
+            const data = readFileSync("localconfig.json", { flag: "r", encoding: "utf-8" });
+            this.localconfig = JSON.parse(data);
+        } catch (e) {}
+
         app.whenReady().then(() => this.init());
+
 
         app.on('window-all-closed', () => this.quit());
     }
@@ -52,12 +60,9 @@ export default class Client {
     }
 
     init() {
+        this.setupCommands();
+
         this.bridge.init();
-        this.bridge.on('Client-devTest', () => {
-            console.log("Starting dev test");
-            this.configure("Priscilla Test Profile", TestProfile);
-            this.loadDesktop();
-        });
 
         this.bridge.on('Client-register', (params: RegisterParams) => {
             console.log(`Register: ${params.joinCode} ${params.name}`);
@@ -70,9 +75,22 @@ export default class Client {
             }).catch(this.errorHandler);
         });
 
+        this.bridge.on('Client-ready', () => {
+            this.bridge.send('Client-setConfig', {
+                defaultServerURL: this.localconfig.defaultServerURL,
+                language: this.localconfig.language,
+                theme: this.localconfig.theme
+            });
+            if (this.localconfig.debug) {
+                this.state.enableDebug();
+            }
+            this.bridge.send('Client-init');
+        });
+
         electronApp.setAppUserModelId('ukf.priscillaclient')
 
         this.createWindow();
+
         
         app.on('browser-window-created', (_, window) => {
             optimizer.watchWindowShortcuts(window)
@@ -127,6 +145,12 @@ export default class Client {
     }
     
     setupDebug() {
+        this.bridge.on('Debug-loadTestProfile', () => {
+            console.log("Starting dev test");
+            this.configure("DEBUG TEST PROFILE", TestProfile);
+            this.loadDesktop();
+        });
+
         this.bridge.on('Debug-unlock', () => {
             this.integrityManager.submitEvent(IntegrityEvent.create("Client-DEBUG", Severity.DEBUG_ACTION, "Unlocked Session"));
             this.state.unlock();
@@ -148,21 +172,17 @@ export default class Client {
         });
     }
 
+    setupCommands() {
+        this.emitter.on("Client-enableKiosk", () => this.kiosk(true));
+        this.emitter.on("Client-disableKiosk", () => this.kiosk(false));
+    }
 
     configure(roomName: string, options: ClientConfiguration) {
         this.configuration = options;
         this.window.title = `${roomName} - ${options.name}`;
 
         if (options.kiosk) {
-            if (typeof(options.kiosk) == 'boolean') {
-                this.kiosk(true);
-            } else if (typeof(options.kiosk) == 'object') {
-                if (options.kiosk.waitfor) {
-                    this.emitter.addListener(options.kiosk.waitfor, () => {
-                        this.kiosk(true)
-                    })
-                }
-            }
+            this.kiosk(true);
         }
 
         this.integrityManager.addModule(this.state);
@@ -181,6 +201,16 @@ export default class Client {
 
         if (options.applications) {
             this.appManager.configure(options.applications);
+        }
+
+        if (options.event_flow) {
+            for (const source of Object.keys(options.event_flow)) {
+                for (const target of options.event_flow[source]) {
+                    this.emitter.on(source, () => {
+                        this.emitter.emit(target);
+                    });
+                }
+            }
         }
 
         this.integrityManager.start();

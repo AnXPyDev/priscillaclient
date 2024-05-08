@@ -7,6 +7,7 @@ interface State {
     desktopConfiguration: DesktopConfiguration;
     language: Language
     theme: Theme
+    defaultServerURL: string
 }
 
 export const useConfiguration = defineStore('configuration', {
@@ -15,6 +16,7 @@ export const useConfiguration = defineStore('configuration', {
             apps: []
         },
         language: Language.ENGLISH,
-        theme: "light"
+        theme: "light",
+        defaultServerURL: ""
     })
 });

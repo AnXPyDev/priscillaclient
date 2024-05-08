@@ -1,6 +1,6 @@
 {
     "name": "Priscilla Secure Test",
-    "debug": true,
+    "kiosk": false,
     "integrity": {
         "modules": {
             "vanguard": {
@@ -9,9 +9,13 @@
                 }
             },
             "supervisor": {
-                "protocol": "log"
+                "locking_active": false
             }
         }
+    },
+    "event_flow": {
+        "Priscilla-login": [ "Client-enableKiosk", "Supervisor-enableLocking"],
+        "Priscilla-finish": [ "State-done", "Client-disableKiosk", "Supervisor-disableLocking"]
     },
     "webprofiles": {
         "priscilla": {
@@ -22,26 +26,49 @@
                     "exits": [
                         {
                             "triggers": [ "https://priscilla.fitped.eu/dashboard" ],
-                            "target": "test",
-                            "message": "Logged in to priscilla"
+                            "target": "selection",
+                            "message": "Logged in to priscilla",
+                            "emit": "Priscilla-login"
                         }
                     ],
                     "nav_whitelist": [
                         "https://priscilla.fitped.eu/dashboard"
                     ]
                 },
-                "test": {
-                    "entry": "https://priscilla.fitped.eu/chapter_content/54"
-                }
+                "selection": {
+                    "entry": "https://priscilla.fitped.eu/course_content/131",
+                    "exits": [
+                        {
+                            "triggers": [ "https://priscilla.fitped.eu/competition_content/" ],
+                            "target": "competition",
+                            "message": "Entered competition"
+                        }
+                    ]
+                },
+                "competition": {
+                    "exits": [
+                        {
+                            "triggers": [ "https://priscilla.fitped.eu/competition_result/" ],
+                            "target": "results",
+                            "message": "Finished competition",
+                            "emit": "Priscilla-finish"
+                        }
+                    ]
+                },
+                "results": {}
             },
             "begin": "login",
             "whitelist": [
                 "https://.*\\.fitped\\.eu/",
                 "https://cdn\\..*/",
                 "https://cdnjs\\..*/",
-                "https://fonts\\..*/"
+                "https://fonts\\..*/",
+                ".*://.*fpvai.ukf.sk/"
             ],
-            "nav_whitelist": []
+            "nav_whitelist": [
+                "https://priscilla.fitped.eu/competition_content/",
+                "https://priscilla.fitped.eu/competition_result/"
+            ]
         },
         "translator": {
             "homepage": "https://translate.google.com",

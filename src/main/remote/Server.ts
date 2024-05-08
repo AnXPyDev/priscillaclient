@@ -1,8 +1,7 @@
-import axios, { Axios } from "axios";
 import Client from "@/Client";
 import Mailbox from "./Mailbox";
 import RefreshMailbox from "./RefreshMailbox";
-import ClientConfiguration from "@/ClientConfiguration";
+import { ClientConfiguration } from "@/Configuration";
 import { createConnection, ConnectionConfiguration, Connection } from "./Connection";
 
 export interface ServerFeatures {

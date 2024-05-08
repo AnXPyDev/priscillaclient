@@ -4,14 +4,19 @@ import { ref } from 'vue';
 import { RegisterParams } from '@shared/types';
 import String from '@/components/String.vue';
 import Button from '@/components/Button.vue';
+import { useConfiguration } from '@/stores/configuration';
+import { useState } from '@/stores/state';
 
 function devTest() {
-    bridge.send('Client-devTest');
+    bridge.send('Debug-loadTestProfile');
 }
+
+const configuration = useConfiguration();
+const state = useState();
 
 const joinCode = ref<string>("");
 const name = ref<string>("");
-const url = ref<string>("");
+const url = ref<string>(configuration.defaultServerURL);
 
 const inputErrors = ref({
     url: false,
@@ -79,7 +84,7 @@ function connect() {
             </div>
         </div>
         <Button @click="connect()"><String name="entry_button_connect_label"/></Button>
-        <Button @click="devTest()">Dev Test</Button>
+        <Button v-if="state.debug" @click="devTest()">Dev Test</Button>
     </div>
 </template>
 

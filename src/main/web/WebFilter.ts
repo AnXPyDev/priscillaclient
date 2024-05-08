@@ -9,6 +9,24 @@ export class Sieve implements WebFilter {
     }
 }
 
+type Callback = (url: string) => boolean;
+
+export class CallbackWebFilter implements WebFilter {
+    callback: Callback
+    constructor(callback: Callback) {
+        this.callback = callback;
+    }
+
+    static from(callback: Callback) {
+        return new CallbackWebFilter(callback);
+    }
+
+    isAllowedURL(url: string): boolean {
+        return this.callback(url);
+    }
+
+}
+
 export class MatchWebFilter implements WebFilter {
     whitelist: string[];
     constructor(whitelist: string[]) {

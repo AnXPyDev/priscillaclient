@@ -1,8 +1,8 @@
 import { IntegrityConfiguration } from "@/integrity/IntegrityManager";
 import { ApplicationConfiguration } from "@/web/Application";
 
-export default interface ClientConfiguration {
-    name: string
+export interface ClientConfiguration {
+    name?: string
     debug?: boolean
     kiosk?: boolean | {
         waitfor?: string
@@ -12,4 +12,14 @@ export default interface ClientConfiguration {
         [name: string]: object
     }
     applications?: ApplicationConfiguration[]
+    event_flow?: {
+        [source: string]: string[]
+    }
 };
+
+export interface LocalConfiguration {
+    defaultServerURL?: string
+    language?: string
+    theme?: string
+    debug?: boolean
+}

@@ -3,7 +3,7 @@ import '@/styles/main.scss';
 import { createApp } from 'vue'
 import { createPinia } from 'pinia';
 
-import { setTheme } from './lib/theme';
+import { Theme, Themes, setTheme } from './lib/theme';
 
 import App from '@/App.vue'
 
@@ -37,6 +37,7 @@ const state = useState();
 
 import { bridge } from './lib/Bridge';
 import { DesktopConfiguration } from '@shared/types';
+import { Language } from './lib/language';
 
 bridge.on('Client-loadDesktop', (config: DesktopConfiguration) => {
     state.connected = true;
@@ -62,6 +63,30 @@ bridge.on('Client-enableDebug', () => {
     state.debug = true;
 })
 
+interface Config {
+    defaultServerURL?: string
+    language?: string
+    theme?: string
+}
+
+bridge.on('Client-setConfig', (config: Config) => {
+    if (config.defaultServerURL) {
+        configuration.defaultServerURL = config.defaultServerURL
+    }
+    if (config.language && Language[config.language]) {
+        configuration.language = Language[config.language]
+    }
+    if (config.theme && Themes.includes(config.theme as Theme)) {
+        configuration.theme = config.theme as Theme;
+    }
+});
+
+bridge.on('Client-init', () => {
+    app.mount('#app');
+})
+
+bridge.send('Client-ready');
+
 router.afterEach((to) => {
     state.current_route = to.name?.toString()!!;
     console.log(state.current_route);
@@ -70,4 +95,3 @@ router.afterEach((to) => {
 router.push({ name: "home" });
 
 
-app.mount('#app');

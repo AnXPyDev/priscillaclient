@@ -45,7 +45,7 @@ interface SupervisorConfiguration {
     minimum_severity?: number
     minimum_lock_severity?: number
     minimum_warning_severity?: number
-    waitfor?: string
+    locking_active?: boolean
 }
 
 export default class Supervisor extends IntegrityModule {
@@ -95,6 +95,16 @@ export default class Supervisor extends IntegrityModule {
         const server = this.manager.client.server;
         const protocol: string = options.protocol ?? server.features?.supervisor?.protocol ?? "log";
 
+        this.locking_active = options.locking_active ?? this.locking_active;
+        
+        this.manager.emitter.on("Supervisor-enableLocking", () => {
+            this.locking_active = true;
+        });
+        
+        this.manager.emitter.on("Supervisor-disableLocking", () => {
+            this.locking_active = false;
+        });
+
         if (protocol == 'http') {
             this.connection = new HttpConnection(server);
         } else {
@@ -104,15 +114,9 @@ export default class Supervisor extends IntegrityModule {
             this.connection = new LogConnection();
         } 
 
+
         this.minimum_severity = options.minimum_severity ?? this.minimum_severity;
         this.minimum_lock_severity = options.minimum_lock_severity ?? this.minimum_lock_severity;
         this.minimum_warning_severity = options.minimum_warning_severity ?? this.minimum_warning_severity;
-
-        if (options.waitfor) {
-            this.locking_active = false
-            this.manager.emitter.addListener(options.waitfor, () => {
-                this.locking_active = true
-            });
-        }
     }
 }
