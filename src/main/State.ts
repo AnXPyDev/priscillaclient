@@ -1,6 +1,7 @@
 import Client from "./Client";
 import IntegrityModule from "./integrity/IntegrityModule";
 import { Severity } from "./integrity/IntegrityEvent";
+import PushService from "./remote/PushService";
 
 export default class State extends IntegrityModule {
     getName(): string { return "ClientState"; }
@@ -8,6 +9,7 @@ export default class State extends IntegrityModule {
     stop(): void {}
 
     client: Client;
+    pushservice!: PushService;
 
     state: {
         locked: boolean
@@ -116,9 +118,11 @@ export default class State extends IntegrityModule {
 
             handler();
         });
+
+        this.pushservice = this.client.server.pushservice;
     }
 
-    async commit() {
-        await this.client.server.post("/client/pushstate", { state: JSON.stringify(this.state) });
+    commit() {
+        this.pushservice.pushState(this.state);
     }
 }

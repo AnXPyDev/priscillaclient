@@ -1,1 +1,3 @@
-cc src/main.c -o ../vanguard
+#!/bin/sh
+
+cc src/main.c -o vanguard

@@ -14,7 +14,9 @@ import State from '@/State'
 import { ClientConfiguration, LocalConfiguration } from '@/Configuration'
 import { EventEmitter } from 'stream'
 import IntegrityEvent, { Severity } from './integrity/IntegrityEvent'
-import { readFileSync } from 'fs'
+
+import updateRoutine from './updateRoutine'
+import { readFile } from 'fs/promises'
 
 export default class Client {
     emitter: EventEmitter = new EventEmitter();
@@ -39,10 +41,18 @@ export default class Client {
     isKiosk = false;
 
     constructor() {
+        this.async_constructor()
+    }
+
+    private async async_constructor() {
         try {
-            const data = readFileSync("localconfig.json", { flag: "r", encoding: "utf-8" });
+            const data = await readFile("localconfig.json", { flag: "r", encoding: "utf-8" });
             this.localconfig = JSON.parse(data);
         } catch (e) {}
+
+        if (!this.localconfig.noupdate) {
+            await updateRoutine();
+        }
 
         app.whenReady().then(() => this.init());
 

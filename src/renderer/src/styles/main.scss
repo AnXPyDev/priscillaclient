@@ -1,5 +1,5 @@
 @use 'lib/colors';
-@import 'lib/fonts.scss';
+@use 'lib/fonts.scss';
 
 :root.theme-light {
     @include colors.theme(colors.$clr-light);

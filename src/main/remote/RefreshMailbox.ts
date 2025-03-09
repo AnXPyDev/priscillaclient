@@ -1,15 +1,17 @@
-import Mailbox, { Message } from "./Mailbox";
+import Mailbox, { MailboxConfiguration, Message } from "./Mailbox";
 import Server from "./Server";
 
 export default class RefreshMailbox extends Mailbox {
     server: Server;
-    delay: number = 1000;
+    delay: number = 5000;
     running: boolean = false;
-
+    
+    /*
     pending: Map<number, {
         resolve: (value: any) => void,
         reject: (reason: any) => void
     }> = new Map();
+    */
 
     messages: Message[] = [];
     last_message_id: number = -1;
@@ -17,11 +19,13 @@ export default class RefreshMailbox extends Mailbox {
     messageHandlers: ((data: object) => void)[] = [];
 
     
-    constructor(server: Server) {
+    constructor(server: Server, configuration: MailboxConfiguration) {
         super();
         this.server = server;
+        this.delay = configuration.interval ?? this.delay;
     }
-
+    
+    /*
     async getResponse() {
         const requests = Array.from(this.pending.keys());
         let response: {
@@ -44,13 +48,17 @@ export default class RefreshMailbox extends Mailbox {
             this.pending.delete(id);
         }
     }
+    */
 
     async getMessages() {
         const response = await this.server.post("/client/getmessages", {
             last_id: this.last_message_id
         });
 
+
         const messages: Message[] = response.messages!!;
+        
+        //console.log("getmessages", messages);
 
         if (messages.length == 0) {
             return;
@@ -70,7 +78,7 @@ export default class RefreshMailbox extends Mailbox {
         while (this.running) {
             await new Promise((resolve) => setTimeout(resolve, this.delay));
             try {
-            await this.getResponse();
+            //await this.getResponse();
             await this.getMessages();
             } catch(e) {
                 console.error(e);

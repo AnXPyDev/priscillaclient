@@ -1,5 +1,7 @@
 import { IntegrityConfiguration } from "@/integrity/IntegrityManager";
 import { ApplicationConfiguration } from "@/web/Application";
+import { MailboxConfiguration } from "./remote/Mailbox";
+import { PushServiceConfiguration } from "./remote/PushService";
 
 export interface ClientConfiguration {
     name?: string
@@ -15,11 +17,16 @@ export interface ClientConfiguration {
     event_flow?: {
         [source: string]: string[]
     }
+
+    mailbox?: MailboxConfiguration
+    pushservice?: PushServiceConfiguration
 };
 
 export interface LocalConfiguration {
+    updateProviderURL?: string
     defaultServerURL?: string
     language?: string
     theme?: string
     debug?: boolean
+    noupdate?: boolean
 }

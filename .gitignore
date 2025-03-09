@@ -6,3 +6,10 @@ out
 package-lock.json
 *.exe
 localconfig.json
+latest.zip
+
+updateservice/*.spec
+updateservice/*.exe
+updateservice/build
+
+tmp_archive

@@ -3,6 +3,7 @@ import Mailbox from "./Mailbox";
 import RefreshMailbox from "./RefreshMailbox";
 import { ClientConfiguration } from "@/Configuration";
 import { createConnection, ConnectionConfiguration, Connection } from "./Connection";
+import PushService, { RealtimePushService, UnifiedPushService } from "./PushService";
 
 export interface ServerFeatures {
     supervisor: {
@@ -11,6 +12,7 @@ export interface ServerFeatures {
     messages: {
         protocol: "http-long-polling" | "http-refresh" | "socket"
     }
+    unifiedpush?: boolean
 };
 
 export default class Server {
@@ -18,6 +20,7 @@ export default class Server {
     connection!: Connection;
     features!: ServerFeatures;
     mailbox!: Mailbox;
+    pushservice!: PushService;
     secret!: string;
 
     constructor(client: Client) {
@@ -38,25 +41,42 @@ export default class Server {
     }
 
     async start(config: ConnectionConfiguration) {
-
         this.connection = createConnection(config);
-
         this.features = await this.post("/info/features");
-
         this.setup();
     }
 
-    setupSession() {
+    setupSession(configuration: ClientConfiguration) {
+        const req_proto = this.features.messages.protocol;
+        const mailbox_config = configuration.mailbox ?? {};
+
+        if (mailbox_config.type === "refresh" || mailbox_config.type === undefined) {
+            if (req_proto !== "http-refresh") {
+                throw new Error("Refresh mailbox requested by configuration but not supported by server");
+            }
+            this.mailbox = new RefreshMailbox(this, mailbox_config);
+        } else {
+            throw new Error(`Unsupported mailbox type ${mailbox_config.type}`)
+        }
+
+        const push_config = configuration.pushservice ?? {};
+
+        if (push_config.type === "unified") {
+            if (!this.features.unifiedpush) {
+                throw new Error("Unifiedpush requested by configuration but not supported by server");
+            }
+            this.pushservice = new UnifiedPushService(this, push_config);
+        } else if (push_config.type === "realtime" || push_config.type === undefined) {
+            this.pushservice = new RealtimePushService(this, push_config);
+        } else {
+            throw new Error(`Unsupported pushservice type ${push_config.type}`);
+        }
+
         this.mailbox.start();
+        this.pushservice.start();
     }
 
     setup() {
-        const req_proto = this.features.messages.protocol;
-        if (req_proto == "http-refresh") {
-            this.mailbox = new RefreshMailbox(this);
-        } else {
-            throw new Error(`Unsupported requests protocol ${req_proto}`)
-        }
     }
 
     async joinRoom(joinCode: string, name: string): Promise<{
@@ -65,9 +85,10 @@ export default class Server {
     }> {
         const res = await this.post("/client/joinroom", { joinCode, name });
         this.secret = res.secret;
-        this.setupSession();
+        const config = JSON.parse(res.clientConfiguration);
+        this.setupSession(config);
         return {
-            clientConfiguration: JSON.parse(res.clientConfiguration),
+            clientConfiguration: config,
             roomName: res.roomName
         }
     }

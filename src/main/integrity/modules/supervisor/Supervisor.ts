@@ -1,7 +1,6 @@
 import IntegrityEvent, { Severity } from "@/integrity/IntegrityEvent";
 import IntegrityModule, { IntegrityModuleFactory } from "@/integrity/IntegrityModule";
-import Server from "@/remote/Server";
-
+import PushService from "@/remote/PushService";
 
 export class SupervisorFactory extends IntegrityModuleFactory {
     create(): IntegrityModule {
@@ -9,39 +8,7 @@ export class SupervisorFactory extends IntegrityModuleFactory {
     }
 }
 
-abstract class Connection {
-    abstract connect(): Promise<any>;
-    abstract disconnect(): Promise<any>;
-    abstract push(event: IntegrityEvent): Promise<any>;
-}
-
-class HttpConnection extends Connection {
-    server: Server;
-
-    constructor(server: Server) {
-        super();
-        this.server = server;
-    }
-
-    async connect() {}
-    async disconnect() {}
-    async push(event: IntegrityEvent) {
-        await this.server.post("/client/pushevent", {
-            "data": JSON.stringify(event)
-        });
-    }
-}
-
-class LogConnection extends Connection {
-    async connect() {}
-    async disconnect() {}
-    async push(event: IntegrityEvent) {
-        console.log(event.toString());
-    }
-}
-
 interface SupervisorConfiguration {
-    protocol?: string
     minimum_severity?: number
     minimum_lock_severity?: number
     minimum_warning_severity?: number
@@ -49,7 +16,7 @@ interface SupervisorConfiguration {
 }
 
 export default class Supervisor extends IntegrityModule {
-    connection!: Connection;
+    pushservice!: PushService;
     minimum_severity: number = -255;
     minimum_lock_severity: number = Severity.BREACH;
     minimum_warning_severity: number = Severity.WARNING;
@@ -60,11 +27,9 @@ export default class Supervisor extends IntegrityModule {
     }
 
     start(): void {
-        this.connection.connect();
-
         this.manager.emitter.on("IE", (event: IntegrityEvent) => {
             if (event.severity >= this.minimum_severity || event.severity < 0) {
-                this.connection.push(event);
+                this.pushservice.pushEvent(event);
             }
             if (event.severity >= this.minimum_lock_severity && this.locking_active) {
                 if (this.manager.client.state.state.locked) {
@@ -87,13 +52,11 @@ export default class Supervisor extends IntegrityModule {
         });
     }
 
-    stop(): void {
-       this.connection.disconnect();
-    }
+    stop(): void {}
 
     configure(options: SupervisorConfiguration = {}): void {
         const server = this.manager.client.server;
-        const protocol: string = options.protocol ?? server.features?.supervisor?.protocol ?? "log";
+        this.pushservice = server.pushservice;
 
         this.locking_active = options.locking_active ?? this.locking_active;
         
@@ -104,16 +67,6 @@ export default class Supervisor extends IntegrityModule {
         this.manager.emitter.on("Supervisor-disableLocking", () => {
             this.locking_active = false;
         });
-
-        if (protocol == 'http') {
-            this.connection = new HttpConnection(server);
-        } else {
-            if (protocol != "log") {
-                console.error(`Invalid supervisor protocol "${protocol}", using log`);
-            }
-            this.connection = new LogConnection();
-        } 
-
 
         this.minimum_severity = options.minimum_severity ?? this.minimum_severity;
         this.minimum_lock_severity = options.minimum_lock_severity ?? this.minimum_lock_severity;
