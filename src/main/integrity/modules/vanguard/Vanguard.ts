@@ -5,6 +5,7 @@ import VanguardFeature from "./VanguardFeature";
 import { FeatureCode, MessageCode, VanguardMessage, VanguardRequest, VanguardRequestCommand } from "./VanguardDecl";
 
 import availableFeatures from "./availableFeatures";
+import { dialog } from "electron";
 
 
 export interface VanguardConfiguration {
@@ -34,6 +35,13 @@ export default class Vanguard extends IntegrityModule {
         this.process.stdout?.on('data', (unread: Buffer) => this.readMessages(unread));
         this.process.stderr?.on('data', (data: Buffer) => {
             console.log(`Vanguard stderr: "${data.toString('utf8')}"`);
+        });
+
+        this.process.on("close", (code) => {
+            if (code !== 0) {
+                dialog.showErrorBox("Error", "Vanguard exited unexpectedly!");
+                process.exit(1);
+            }
         });
 
         this.sendRequest(new VanguardRequestCommand(

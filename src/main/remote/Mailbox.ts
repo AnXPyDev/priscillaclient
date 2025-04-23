@@ -10,5 +10,6 @@ export interface MailboxConfiguration {
 
 export default abstract class Mailbox {
     abstract start(): void;
+    abstract stop(): void;
     abstract handleMessage(handler: (data: object) => void);
 }

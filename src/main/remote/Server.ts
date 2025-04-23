@@ -76,6 +76,11 @@ export default class Server {
         this.pushservice.start();
     }
 
+    stop() {
+        this.mailbox?.stop()
+        this.pushservice?.stop()
+    }
+
     setup() {
     }
 

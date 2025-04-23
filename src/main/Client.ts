@@ -106,12 +106,12 @@ export default class Client {
             optimizer.watchWindowShortcuts(window)
         });
 
-        app.on('before-quit', (event) => {
-            if (!this.state.state.disconnected) {
+        app.on('before-quit', async (event) => {
+            if (this.configuration && !this.state.state.disconnected) {
                 event.preventDefault();
-                this.state.disconnect().then(() => {
-                    app.quit();
-                });
+                await this.state.disconnect();
+                this.server.stop();
+                app.quit();
             }
         });
     }

@@ -75,14 +75,14 @@ export default class RefreshMailbox extends Mailbox {
     }
 
     async eventLoop() {
+        await new Promise((resolve) => setTimeout(resolve, this.delay));
         while (this.running) {
-            await new Promise((resolve) => setTimeout(resolve, this.delay));
             try {
-            //await this.getResponse();
-            await this.getMessages();
+                await this.getMessages();
             } catch(e) {
                 console.error(e);
             }
+            await new Promise((resolve) => setTimeout(resolve, this.delay));
         }
 
     }

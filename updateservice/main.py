@@ -9,6 +9,7 @@ import subprocess
 import psutil
 import time
 import traceback
+import ctypes
 
 def extract_zip(zip_file_path, extract_to_path=None):
 	if extract_to_path is None:
@@ -63,32 +64,23 @@ def get_listing(config):
 	listing = listing_req.json()
 	return listing
 
-def check_updates(config, listing):
+def get_update(config, listing):
 	local_ver = None
 	with open("version.json", "r") as f:
 		local_ver = json.load(f)["version"] or "0"
 
-	local_ver = version.parse(local_ver)
-	latest = listing["latest"]
-	latest_ver = version.parse(latest["version"])
-
-	if (latest_ver > local_ver):
-		return (latest["version"], config["update_provider_url"] + latest["download_path"])
-
-	return None
-
-def update(config):
-	listing = get_listing(config)
-	version, download_path = check_updates(config, listing)
-	if not version:
-		print("No updates found")
+	if not "latest" in listing:
 		return
 
-	print("Downloading", download_path)
-	download_file(download_path, "update.zip")
-	print("Update downloaded successfully")
-	print("Extracting update.zip")
-	extract_zip("update.zip", "tmp_update")
+	latest = listing["latest"]
+
+	if (version.parse(latest["version"]) > version.parse(local_ver)):
+		path = latest["full"]
+		delta = latest.get("delta", {}).get(local_ver, "")
+		if delta != "" and not config.get("nodelta", False):
+			path = delta
+
+		return (latest["version"], config["update_provider_url"] + path)
 
 def load_config():
 	config = None
@@ -99,20 +91,26 @@ def load_config():
 def cmd_check():
 	config = load_config()
 	listing = get_listing(config)
-	download_url = check_updates(config, listing)
 
-	if download_url:
-		print("Update found")
-		sys.exit(0)
+	update = get_update(config, listing)
+	if update is None:
+		print("No update found")
+		sys.exit(1)
+		return
 
-	print("No update found")
-	sys.exit(1)
+	version, download_url = update
+
+	print(f"Update found {version} {download_url}")
+	sys.exit(0)
+	return
+
 
 def launch_detached(executable, args):
 	if "--nolaunch" in sys.argv:
 		print(executable, args)
 		input()
 		sys.exit(0)
+		return
 
 	this_pid = os.getpid()
 	subprocess.Popen([executable, f"--wait={this_pid}"] + args, creationflags=subprocess.DETACHED_PROCESS)
@@ -135,14 +133,30 @@ def wait_for_parent():
 
 def cmd_update():
 	config = load_config()
-	update(config)
+	listing = get_listing(config)
 
-	launch_detached("tmp_update/update.exe", ["--stage2"])
+	update = get_update(config, listing)
+	if update is None:
+		print("No update found")
+		sys.exit(1)
+		return
 
-	time.sleep(0.5)
+	version, download_url = update
 
+	print("Downloading", download_url)
+	download_file(download_url, "update.zip")
+	print("Update downloaded successfully")
+	print("Extracting update.zip")
+	extract_zip("update.zip", "tmp_update")
 
-def cmd_stage2():
+	if os.path.isfile("tmp_update/update.exe"):
+		launch_detached("tmp_update/update.exe", ["--stage2"])
+		time.sleep(0.5)
+		return
+	
+	cmd_stage2(False)
+
+def cmd_stage2(detach = True):
 	print("Stage2: replacing files")
 	ps_commands = [
 		"Copy-Item -Path tmp_update/* -Destination . -Recurse -Force"
@@ -151,21 +165,26 @@ def cmd_stage2():
 	for cmd in ps_commands:
 		subprocess.run(["powershell", "-Command", cmd], check=True)
 
-	launch_detached("./update.exe", ["--stage3"])
+	if detach:
+		launch_detached("./update.exe", ["--stage3"])
+		time.sleep(0.5)
+		return
 
-	time.sleep(0.5)
+	cmd_stage3()
 
 
 def cmd_stage3():
-	print("Stage3: removing tmp_update folder")
+	print("Stage3: removing temporary files")
 	ps_commands = [
-		"Remove-Item -Recurse -Force tmp_update"
+		"Remove-Item -Recurse -Force -Path tmp_update, update.zip"
 	]
 
 	for cmd in ps_commands:
 		subprocess.run(["powershell", "-Command", cmd], check=True)
 
 	print("Update finished")
+
+	ctypes.windll.user32.MessageBoxW(0, "Update completed, you can now start the application!", "Update complete", 0x40)
 
 def main():
 	try:

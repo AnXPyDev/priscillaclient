@@ -11,6 +11,7 @@ cp -r dist/win-unpacked/* tmp_archive/
 cp -r metadata/* tmp_archive/
 cp -r updateservice/update.exe tmp_archive/
 cp -r vanguard/vanguard.exe tmp_archive/
+cp "$(command -v libwinpthread-1.dll)" tmp_archive/
 
 
 cd tmp_archive
